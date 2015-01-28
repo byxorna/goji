@@ -22,3 +22,6 @@ _testmain.go
 *.exe
 *.test
 *.prof
+
+*.swp
+marathon_http_proxy_generator

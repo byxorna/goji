@@ -1,0 +1,6 @@
+{
+  "marathon-host":"ct-aa8910fa.ewr01.tumblr.net",
+  "domain":"service.ewr01.tumblr.net",
+  "template": "templates/nginx.toml",
+  "services": {}
+}

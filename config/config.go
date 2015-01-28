@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 )
 
@@ -14,9 +15,11 @@ type Config struct {
 	// 8080
 	MarathonPort int `json:"marathon-port"`
 	// service.ewr01.tumblr.net
-	ServiceDomain string `json:"service-domain"`
+	ServiceDomain string `json:"domain"`
 	// {"phil":"/internal/sre/sys/phil","collins":"/internal/sre/sys/collins"}
-	Services ServiceAppMap `json:"services,omitempty"`
+	Services     ServiceAppMap `json:"services,omitempty"`
+	TemplateFile string        `json:"template,omitempty"`
+	//TODO add UseSsl
 }
 
 func LoadConfig(configPath string) (*Config, error) {
@@ -29,6 +32,15 @@ func LoadConfig(configPath string) (*Config, error) {
 	err = json.NewDecoder(f).Decode(&c)
 	if c.MarathonPort == 0 {
 		c.MarathonPort = 8080
+	}
+	if c.TemplateFile == "" {
+		return nil, fmt.Errorf("template is required")
+	}
+	if c.MarathonHost == "" {
+		return nil, fmt.Errorf("marathon-host is required")
+	}
+	if len(c.Services) == 0 {
+		return nil, fmt.Errorf("map of marathon app IDs to service name in services is required")
 	}
 	return &c, nil
 }
