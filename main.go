@@ -23,17 +23,37 @@ func main() {
 		log.Fatal(err)
 	}
 	log.Printf("Loaded config: %s\n", config)
-	Configure(config)
-	for id, service := range config.Services {
-		ts, err := GetTasks(id)
-		if err != nil {
-			log.Printf("Error fetching tasks for %s: %s\n", id, err.Error())
-		}
-		log.Printf("Application %s at %s.%s:\n", id, service, config.Domain)
-		for _, t := range ts {
-			for _, p := range t.Ports {
-				log.Printf("  %s:%d\n", t.Host, p)
+	tc := NewTaskClient(config)
+	log.Printf("Querying marathon for tasks\n")
+	serviceTasksMap, err := tc.loadTasks(config.Services)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	// just print out what apps and tasks we found
+	for service, tasks := range serviceTasksMap {
+		appId := config.Services[service]
+		log.Printf("App %s at %s.%s:\n", appId, service, config.Domain)
+		for _, task := range *tasks {
+			for _, port := range task.Ports {
+				log.Printf("  %s:%d\n", task.Host, port)
 			}
 		}
+
+		Template(*tasks, config.TemplateFile)
 	}
+
+}
+
+func (tc TaskClient) loadTasks(services ServiceAppIdMap) (ServiceTasksMap, error) {
+	res := ServiceTasksMap{}
+	for service, appId := range services {
+		ts, err := tc.GetTasks(appId)
+		if err != nil {
+			return nil, err
+		}
+		res[service] = &ts
+	}
+	return res, nil
+
 }

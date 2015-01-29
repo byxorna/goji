@@ -37,6 +37,12 @@ import (
   }
 */
 
+type TaskClient struct {
+	host   string
+	port   int
+	client *http.Client
+}
+
 type Task struct {
 	Id        string `json:"id"`
 	Ports     []int  `json:"ports"`
@@ -46,21 +52,18 @@ type Task struct {
 	version   string `json:"version"`
 }
 
-var (
-	host   string
-	port   int
-	client *http.Client
-)
-
-// this feels wrong. whats the idiomatic way to configure the module before use?
-func Configure(cfg *Config) {
-	host = cfg.MarathonHost
-	port = cfg.MarathonPort
-	client = &http.Client{}
+func NewTaskClient(cfg *Config) *TaskClient {
+	return &TaskClient{
+		host:   cfg.MarathonHost,
+		port:   cfg.MarathonPort,
+		client: &http.Client{},
+	}
 }
 
-func GetTasks(appId string) ([]Task, error) {
-	url := fmt.Sprintf("http://%s:%d/v2/apps%s/tasks", host, port, appId)
+//TODO this may be more efficient to hit /v2/tasks?status=running
+// and filter for the apps we care about
+func (c *TaskClient) GetTasks(appId string) ([]Task, error) {
+	url := fmt.Sprintf("http://%s:%d/v2/apps%s/tasks", c.host, c.port, appId)
 	log.Printf("Getting %s\n", url)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -69,15 +72,14 @@ func GetTasks(appId string) ([]Task, error) {
 
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("User-Agent", "byxorna/marathon_http_proxy_generator")
-	resp, err := client.Do(req)
-	defer resp.Body.Close()
+	resp, err := c.client.Do(req)
 
-	//TODO this feels awfully words. I miss ruby's brevity....
+	//TODO this feels awfully wordy. I miss ruby's brevity....
 
 	if err != nil {
-		log.Printf("Error fetching tasks for %s: %s\n", appId, err.Error())
 		return nil, err
 	}
+	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -85,7 +87,7 @@ func GetTasks(appId string) ([]Task, error) {
 	}
 
 	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("Got response %d: %s", resp.StatusCode, body)
+		return nil, fmt.Errorf("Got response %d from %s: %s", resp.StatusCode, url, body)
 	}
 
 	var js map[string][]Task

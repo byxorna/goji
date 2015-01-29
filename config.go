@@ -7,7 +7,8 @@ import (
 )
 
 // Maps service names (i.e. "phil" or "collins") to their marathon app ID (i.e. /app/sre/sys/phil)
-type ServiceAppMap map[string]string
+type ServiceAppIdMap map[string]string
+type ServiceTasksMap map[string]*[]Task
 
 type Config struct {
 	// localhost
@@ -17,8 +18,8 @@ type Config struct {
 	// service.ewr01.tumblr.net
 	Domain string `json:"domain"`
 	// {"phil":"/internal/sre/sys/phil","collins":"/internal/sre/sys/collins"}
-	Services     ServiceAppMap `json:"services,omitempty"`
-	TemplateFile string        `json:"template,omitempty"`
+	Services     ServiceAppIdMap `json:"services,omitempty"`
+	TemplateFile string          `json:"template,omitempty"`
 }
 
 func LoadConfig(configPath string) (*Config, error) {
