@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/byxorna/marathon_http_proxy_generator/config"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -54,7 +53,7 @@ var (
 )
 
 // this feels wrong. whats the idiomatic way to configure the module before use?
-func Configure(cfg *config.Config) {
+func Configure(cfg *Config) {
 	host = cfg.MarathonHost
 	port = cfg.MarathonPort
 	client = &http.Client{}
