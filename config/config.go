@@ -19,7 +19,6 @@ type Config struct {
 	// {"phil":"/internal/sre/sys/phil","collins":"/internal/sre/sys/collins"}
 	Services     ServiceAppMap `json:"services,omitempty"`
 	TemplateFile string        `json:"template,omitempty"`
-	//TODO add UseSsl
 }
 
 func LoadConfig(configPath string) (*Config, error) {

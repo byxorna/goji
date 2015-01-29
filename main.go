@@ -24,4 +24,5 @@ func main() {
 		log.Fatal(err)
 	}
 	log.Printf("Loaded config: %s\n", config)
+
 }
