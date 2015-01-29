@@ -24,5 +24,17 @@ func main() {
 		log.Fatal(err)
 	}
 	log.Printf("Loaded config: %s\n", config)
-
+	Configure(config)
+	for id, service := range config.Services {
+		ts, err := GetTasks(id)
+		if err != nil {
+			log.Printf("Error fetching tasks for %s: %s\n", id, err.Error())
+		}
+		log.Printf("Application %s at %s.%s:\n", id, service, config.Domain)
+		for _, t := range ts {
+			for _, p := range t.Ports {
+				log.Printf("  %s:%d\n", t.Host, p)
+			}
+		}
+	}
 }

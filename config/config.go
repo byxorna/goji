@@ -15,7 +15,7 @@ type Config struct {
 	// 8080
 	MarathonPort int `json:"marathon-port"`
 	// service.ewr01.tumblr.net
-	ServiceDomain string `json:"domain"`
+	Domain string `json:"domain"`
 	// {"phil":"/internal/sre/sys/phil","collins":"/internal/sre/sys/collins"}
 	Services     ServiceAppMap `json:"services,omitempty"`
 	TemplateFile string        `json:"template,omitempty"`
