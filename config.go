@@ -20,6 +20,8 @@ type Config struct {
 	// {"phil":"/internal/sre/sys/phil","collins":"/internal/sre/sys/collins"}
 	Services     ServiceAppIdMap `json:"services,omitempty"`
 	TemplateFile string          `json:"template,omitempty"`
+	// port upon which to listen for events from marathon
+	HttpPort int `json:"http-port"`
 }
 
 func LoadConfig(configPath string) (*Config, error) {
@@ -32,6 +34,9 @@ func LoadConfig(configPath string) (*Config, error) {
 	err = json.NewDecoder(f).Decode(&c)
 	if c.MarathonPort == 0 {
 		c.MarathonPort = 8080
+	}
+	if c.HttpPort == 0 {
+		c.HttpPort = 8000
 	}
 	if c.TemplateFile == "" {
 		return nil, fmt.Errorf("template is required")

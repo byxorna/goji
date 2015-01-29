@@ -25,7 +25,7 @@ func main() {
 	log.Printf("Loaded config: %s\n", config)
 	tc := NewTaskClient(config)
 	log.Printf("Querying marathon for tasks\n")
-	serviceTasksMap, err := tc.loadTasks(config.Services)
+	serviceTasksMap, err := tc.LoadAllAppTasks(config.Services)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -43,17 +43,7 @@ func main() {
 		Template(*tasks, config.TemplateFile)
 	}
 
-}
-
-func (tc TaskClient) loadTasks(services ServiceAppIdMap) (ServiceTasksMap, error) {
-	res := ServiceTasksMap{}
-	for service, appId := range services {
-		ts, err := tc.GetTasks(appId)
-		if err != nil {
-			return nil, err
-		}
-		res[service] = &ts
-	}
-	return res, nil
+	log.Printf("Listening for events on :%d\n", config.HttpPort)
+	log.Fatal(ListenForEvents(config))
 
 }
