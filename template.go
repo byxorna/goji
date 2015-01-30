@@ -1,24 +1,20 @@
 package main
 
 import (
-	"os"
+	"bytes"
 	"text/template"
 )
 
-type TemplateData struct {
-	Services []Service
-}
-
-// given tasks and a template, do the templating
-func Template(tasks []Task, templateFile string) error {
+// given services and a template, do the templating
+func Template(services []Service, templateFile string) (string, error) {
 	tmpl, err := template.ParseFiles(templateFile)
 	if err != nil {
-		return err
+		return "", err
 	}
-	//TODO write this to the filesystem
-	err = tmpl.Execute(os.Stdout, tasks)
+	buf := new(bytes.Buffer)
+	err = tmpl.Execute(buf, services)
 	if err != nil {
-		return err
+		return "", err
 	}
-	return nil
+	return buf.String(), nil
 }

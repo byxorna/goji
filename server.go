@@ -1,15 +1,13 @@
 package main
 
 import (
-	"fmt"
 	"io"
 	"net/http"
-	//"github.com/byxorna/marathon_http_proxy_generator/marathon"
 )
 
-func ListenForEvents(c *Config) error {
+func ListenForEvents(listenAddr string) error {
 	http.HandleFunc("/event", handleEvent)
-	return http.ListenAndServe(fmt.Sprintf(":%d", c.HttpPort), nil)
+	return http.ListenAndServe(listenAddr, nil)
 }
 
 func handleEvent(res http.ResponseWriter, req *http.Request) {
