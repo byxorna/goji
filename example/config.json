@@ -1,8 +1,7 @@
 {
   "marathon-host":"ct-aa8910fa.ewr01.tumblr.net",
-  "domain":"service.iata.domain.net",
-  "services": {
-    "gabe-test": "/sre/byxorna/site"
-  },
+  "services": [
+    { "app-id": "/sre/byxorna/site", "vhost": "pipefail.service.iata.tumblr.net" }
+  ],
   "template": "templates/nginx.tmpl"
 }

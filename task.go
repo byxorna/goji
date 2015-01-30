@@ -101,14 +101,14 @@ func (c *TaskClient) GetTasks(appId string) ([]Task, error) {
 
 // given a map of services, query for all tasks from marathon
 // TODO this should just take a list of AppIds, instead of a map
-func (tc TaskClient) LoadAllAppTasks(services ServiceAppIdMap) (ServiceTasksMap, error) {
-	res := ServiceTasksMap{}
-	for service, appId := range services {
-		ts, err := tc.GetTasks(appId)
+func (tc TaskClient) LoadAllAppTasks(services []Service) (AppIdTasksMap, error) {
+	res := AppIdTasksMap{}
+	for _, service := range services {
+		ts, err := tc.GetTasks(service.AppId)
 		if err != nil {
 			return nil, err
 		}
-		res[service] = &ts
+		res[service.AppId] = &ts
 	}
 	return res, nil
 }

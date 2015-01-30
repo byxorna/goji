@@ -1,6 +1,5 @@
 {
   "marathon-host":"badhost",
-  "domain":"service.iata.company",
   "template": "templates/nginx.tmpl",
-  "services": {}
+  "services": []
 }

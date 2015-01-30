@@ -1,0 +1,31 @@
+package marathon
+
+import (
+	"fmt"
+	"time"
+)
+
+type RawEvent map[string]interface{}
+
+/*
+API Request: Fired every time marathon receives an API request that modifies an app
+Deployment: Fired whenever a deployment is started or stopped
+*/
+
+type DeploymentEvent struct {
+	eventType string `json:"eventType"`
+	timestamp string `json:"timestamp"`
+	groupId   string `json:"timestamp"`
+	version   string `json:"version"`
+}
+
+func (e RawEvent) Time() (*time.Time, error) {
+	ts, ok := e["timestamp"]
+	if !ok {
+		return nil, fmt.Errorf("timestamp field not found in raw event")
+	}
+	t, err := time.Parse(time.RFC3339, ts.(string))
+	return &t, err
+}
+
+// func (e RawEvent) Decode() (...?) {}

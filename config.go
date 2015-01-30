@@ -6,20 +6,22 @@ import (
 	"os"
 )
 
-// Maps service names (i.e. "phil" or "collins") to their marathon app ID (i.e. /app/sre/sys/phil)
-type ServiceAppIdMap map[string]string
-type ServiceTasksMap map[string]*[]Task
+type Service struct {
+	Vhost string `json:"vhost"`
+	AppId string `json:"app-id"`
+	//TODO add config for healthchecking, type of connection (HTTP/TCP), etc
+	//TODO possibly add configurable domains
+}
+
+type AppIdTasksMap map[string]*[]Task
 
 type Config struct {
 	// localhost
 	MarathonHost string `json:"marathon-host,omitempty"`
 	// 8080
-	MarathonPort int `json:"marathon-port"`
-	// service.ewr01.tumblr.net
-	Domain string `json:"domain"`
-	// {"phil":"/internal/sre/sys/phil","collins":"/internal/sre/sys/collins"}
-	Services     ServiceAppIdMap `json:"services,omitempty"`
-	TemplateFile string          `json:"template,omitempty"`
+	MarathonPort int       `json:"marathon-port"`
+	Services     []Service `json:"services,omitempty"`
+	TemplateFile string    `json:"template,omitempty"`
 	// port upon which to listen for events from marathon
 	HttpPort int `json:"http-port"`
 }
@@ -45,7 +47,7 @@ func LoadConfig(configPath string) (*Config, error) {
 		return nil, fmt.Errorf("marathon-host is required")
 	}
 	if len(c.Services) == 0 {
-		return nil, fmt.Errorf("map of marathon app IDs to service name in services is required")
+		return nil, fmt.Errorf("At least one service is required in `services`")
 	}
 	return &c, nil
 }

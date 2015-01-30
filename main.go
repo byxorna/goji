@@ -25,15 +25,18 @@ func main() {
 	log.Printf("Loaded config: %s\n", config)
 	tc := NewTaskClient(config)
 	log.Printf("Querying marathon for tasks\n")
-	serviceTasksMap, err := tc.LoadAllAppTasks(config.Services)
+	appIdTasksMap, err := tc.LoadAllAppTasks(config.Services)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
 	// just print out what apps and tasks we found
-	for service, tasks := range serviceTasksMap {
-		appId := config.Services[service]
-		log.Printf("App %s at %s.%s:\n", appId, service, config.Domain)
+	for _, service := range config.Services {
+		tasks, ok := appIdTasksMap[service.AppId]
+		if !ok {
+			log.Fatal("Unable to find tasks for app id %s", service.AppId)
+		}
+		log.Printf("App %s at %s.%s:\n", service.AppId, service.Vhost)
 		for _, task := range *tasks {
 			for _, port := range task.Ports {
 				log.Printf("  %s:%d\n", task.Host, port)
