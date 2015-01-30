@@ -1,0 +1,6 @@
+This is a test template
+{{ range $index, $service := .Services }}
+  Hello {{ $service.AppId }} at {{ $service.Vhost }}
+{{ range _, $task := $service.Tasks }}{{ range _, $port := $task.Ports }}
+    task: {{ $task.Id }} {{ $task.Host }}:{{ $port }}{{ end }}{{ end }}
+{{ end }}
