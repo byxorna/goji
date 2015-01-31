@@ -7,7 +7,7 @@ import (
 )
 
 // given services and a template, do the templating
-func Template(services []Service, templateFile string) (string, error) {
+func Template(services ServiceList, templateFile string) (string, error) {
 	tmpl, err := template.ParseFiles(templateFile)
 	if err != nil {
 		return "", err

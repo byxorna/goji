@@ -33,16 +33,14 @@ func main() {
 	services = config.Services
 
 	log.Printf("Loading tasks from marathon\n")
-	log.Printf("before %s\n", services)
 	err = services.LoadAllAppTasks(tc)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	log.Printf("after %s\n", services)
 
 	// just print out what apps and tasks we found
 	for _, service := range services {
-		log.Printf("App %s at %s with %d tasks\n", service.AppId, service.Vhost, len(*service.Tasks))
+		log.Printf("Found app %s with %d tasks\n", service.AppId, service.Vhost, len(*service.Tasks))
 		for _, task := range *service.Tasks {
 			for _, port := range task.Ports {
 				log.Printf("  %s:%d\n", task.Host, port)
@@ -64,12 +62,14 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	go func() {
+	updateChan := make(chan string, 1)
+
+	go func(updateChan *chan string) {
 		for {
-			message := <-updateChan
+			message := <-*updateChan
 			log.Printf("Got message %s; sleeping %d seconds before emitting config\n", message, config.TemplateDelay)
 			//TODO debounce updates
-			//sleep(config.TemplateDelay)
+			//time.Sleep(config.TemplateDelay * time.Second)
 
 			log.Printf("Loading tasks from marathon\n")
 			err = services.LoadAllAppTasks(tc)
@@ -89,7 +89,7 @@ func main() {
 				log.Printf("Unable to write config to %s: %s\n", config.TargetFile, err.Error())
 			}
 		}
-	}()
+	}(&updateChan)
 
 	var listenAddr = fmt.Sprintf(":%d", config.HttpPort)
 	log.Printf("Listening for events on %s\n", listenAddr)
