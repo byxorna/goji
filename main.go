@@ -12,7 +12,7 @@ var (
 	// current state of services we know about
 	services ServiceList
 	// listen to this channel for update triggers
-	updateChan chan string
+	eventChan chan string
 )
 
 func init() {
@@ -62,11 +62,15 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	updateChan := make(chan string, 1)
+	// every event hits eventChan (buffer 10 events)
+	eventChan = make(chan string, 10)
+	// events are coalesced in updateChan
+	//updateChan := make(chan int, 1)
 
-	go func(updateChan *chan string) {
+	go func(c chan string) {
 		for {
-			message := <-*updateChan
+			log.Printf("Awaiting message on event channel")
+			message := <-c
 			log.Printf("Got message %s; sleeping %d seconds before emitting config\n", message, config.TemplateDelay)
 			//TODO debounce updates
 			//time.Sleep(config.TemplateDelay * time.Second)
@@ -89,7 +93,7 @@ func main() {
 				log.Printf("Unable to write config to %s: %s\n", config.TargetFile, err.Error())
 			}
 		}
-	}(&updateChan)
+	}(eventChan)
 
 	var listenAddr = fmt.Sprintf(":%d", config.HttpPort)
 	log.Printf("Listening for events on %s\n", listenAddr)

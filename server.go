@@ -17,7 +17,7 @@ func handleEvent(res http.ResponseWriter, req *http.Request) {
 	log.Printf("Got an event!")
 	io.WriteString(res, "hello, world!\n")
 	res.Header().Set("Content-Type", "text/plain")
-	updateChan <- "fixme"
+	eventChan <- "fixme"
 	fmt.Fprintf(res, "Thanks for the event!")
 	log.Printf("All done")
 }

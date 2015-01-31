@@ -5,9 +5,9 @@ Reverse proxy generator for apps running in Marathon
 
 ## TODO
 
-* fix deadlock in receiving from channel (http handler is blocking waiting on updateChan when getting event)
-* have http listener push messages into channel to trigger templating
-* Start an http server and register with marathon for callbacks
+* debounce events
+* register with marathon for callbacks at startup
+* cleanup callback registration when shutting down?
 * Run a command after generation (check and reload)
 * Write documentation
 
