@@ -6,24 +6,14 @@ import (
 	"os"
 )
 
-type Service struct {
-	Vhost string `json:"vhost"`
-	AppId string `json:"app-id"`
-	Tasks []Task `json:"-"`
-	//TODO add config for healthchecking, type of connection (HTTP/TCP), etc
-	//TODO possibly add configurable domains
-}
-
-type AppIdTasksMap map[string]*[]Task
-
 type Config struct {
 	// localhost
 	MarathonHost string `json:"marathon-host,omitempty"`
 	// 8080
-	MarathonPort int       `json:"marathon-port"`
-	Services     []Service `json:"services,omitempty"`
-	TemplateFile string    `json:"template,omitempty"`
-	TargetFile   string    `json:"target,omitempty"`
+	MarathonPort int         `json:"marathon-port"`
+	Services     ServiceList `json:"services,omitempty"`
+	TemplateFile string      `json:"template,omitempty"`
+	TargetFile   string      `json:"target,omitempty"`
 	// port upon which to listen for events from marathon
 	HttpPort      int `json:"http-port"`
 	TemplateDelay int `json:"delay"`

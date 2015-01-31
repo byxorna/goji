@@ -85,6 +85,7 @@ func (c *TaskClient) GetTasks(appId string) ([]Task, error) {
 	if err != nil {
 		return nil, err
 	}
+	//log.Printf("Got body: %s\n", body)
 
 	if resp.StatusCode != 200 {
 		return nil, fmt.Errorf("Got response %d from %s: %s", resp.StatusCode, url, body)
@@ -96,17 +97,21 @@ func (c *TaskClient) GetTasks(appId string) ([]Task, error) {
 		return nil, err
 	}
 	t := js["tasks"]
+	log.Printf("Found %d tasks for appId %s: %s\n", len(t), appId, t)
 	return t, nil
 }
 
 // populates the list of tasks in each service
-func (tc TaskClient) LoadAllAppTasks(services *[]Service) error {
-	for _, service := range *services {
+// and clobber each service in the ServiceList's Tasks with a new set
+func (services *ServiceList) LoadAllAppTasks(tc *TaskClient) error {
+	for i, service := range *services {
 		ts, err := tc.GetTasks(service.AppId)
 		if err != nil {
 			return err
 		}
-		service.Tasks = ts
+		// I still really dont grok how go's pointers work for mutability
+		// but this works...
+		(*services)[i].Tasks = &ts
 	}
 	return nil
 }

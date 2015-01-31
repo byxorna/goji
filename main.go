@@ -10,7 +10,7 @@ var (
 	configPath string
 	config     *Config
 	// current state of services we know about
-	services []Service
+	services ServiceList
 	// listen to this channel for update triggers
 	updateChan chan string
 )
@@ -33,15 +33,17 @@ func main() {
 	services = config.Services
 
 	log.Printf("Loading tasks from marathon\n")
-	err = tc.LoadAllAppTasks(&services)
+	log.Printf("before %s\n", services)
+	err = services.LoadAllAppTasks(tc)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
+	log.Printf("after %s\n", services)
 
 	// just print out what apps and tasks we found
 	for _, service := range services {
-		log.Printf("App %s at %s.%s:\n", service.AppId, service.Vhost)
-		for _, task := range service.Tasks {
+		log.Printf("App %s at %s with %d tasks\n", service.AppId, service.Vhost, len(*service.Tasks))
+		for _, task := range *service.Tasks {
 			for _, port := range task.Ports {
 				log.Printf("  %s:%d\n", task.Host, port)
 			}
@@ -70,7 +72,7 @@ func main() {
 			//sleep(config.TemplateDelay)
 
 			log.Printf("Loading tasks from marathon\n")
-			err = tc.LoadAllAppTasks(&services)
+			err = services.LoadAllAppTasks(tc)
 			if err != nil {
 				log.Printf("Unable to load tasks from marathon: %s\n", err.Error())
 			}

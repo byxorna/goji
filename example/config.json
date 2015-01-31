@@ -3,5 +3,6 @@
   "services": [
     { "app-id": "/sre/byxorna/site", "vhost": "pipefail.service.iata.tumblr.net" }
   ],
-  "template": "templates/nginx.tmpl"
+  "template": "example/test.tmpl",
+  "target": "./output.cfg"
 }
