@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"io/ioutil"
 	"text/template"
 )
 
@@ -17,4 +18,8 @@ func Template(services []Service, templateFile string) (string, error) {
 		return "", err
 	}
 	return buf.String(), nil
+}
+
+func WriteConfig(cfg string, outputFile string) error {
+	return ioutil.WriteFile(outputFile, []byte(cfg), 0644)
 }

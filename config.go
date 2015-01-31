@@ -23,8 +23,10 @@ type Config struct {
 	MarathonPort int       `json:"marathon-port"`
 	Services     []Service `json:"services,omitempty"`
 	TemplateFile string    `json:"template,omitempty"`
+	TargetFile   string    `json:"target,omitempty"`
 	// port upon which to listen for events from marathon
-	HttpPort int `json:"http-port"`
+	HttpPort      int `json:"http-port"`
+	TemplateDelay int `json:"delay"`
 }
 
 func LoadConfig(configPath string) (*Config, error) {
@@ -43,6 +45,9 @@ func LoadConfig(configPath string) (*Config, error) {
 	}
 	if c.TemplateFile == "" {
 		return nil, fmt.Errorf("template is required")
+	}
+	if c.TargetFile == "" {
+		return nil, fmt.Errorf("target is required")
 	}
 	if c.MarathonHost == "" {
 		return nil, fmt.Errorf("marathon-host is required")
