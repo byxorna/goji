@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"sync"
 	"time"
 )
 
@@ -70,27 +69,23 @@ func main() {
 	eventChan = make(chan string, 10)
 
 	// http://blog.gopheracademy.com/advent-2013/day-24-channel-buffering-patterns/
-	//TODO this doesnt yet work exactly right
-	mutex := sync.Mutex{}
-	go func(c chan string) {
+	go func() {
 		//coalesce events within a window
 		ticker := time.NewTimer(0)
 		var timerCh <-chan time.Time
 		i := 0
 		for {
 			select {
-			case e := <-c:
+			case e := <-eventChan:
 				// count how many events we coalesce, for fun
 				i = i + 1
-				log.Printf("Deferring update with event %s. (%d events coalesced)\n", e, i)
+				log.Printf("Deferring update with event %s. (%d events so far)\n", e, i)
+				log.Printf("%s\n", timerCh)
 				if timerCh == nil {
 					ticker.Reset(time.Duration(config.TemplateDelay) * time.Second)
 					timerCh = ticker.C
 				}
 			case <-timerCh:
-				// only allow a single goroutine to emit a config at once
-				mutex.Lock()
-				defer mutex.Unlock()
 				log.Printf("Coalesced %d events\n", i)
 				err := LoadTasksAndEmitConfig()
 				if err != nil {
@@ -101,7 +96,7 @@ func main() {
 			}
 		}
 
-	}(eventChan)
+	}()
 
 	var listenAddr = fmt.Sprintf(":%d", config.HttpPort)
 	log.Printf("Listening for marathon events on %s/event\n", listenAddr)
