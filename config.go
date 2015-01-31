@@ -19,13 +19,13 @@ type Config struct {
 	TemplateDelay int `json:"delay"`
 }
 
-func LoadConfig(configPath string) (*Config, error) {
+func LoadConfig(configPath string) (Config, error) {
+	c := Config{}
 	f, err := os.Open(configPath)
 	if err != nil {
-		return nil, err
+		return c, err
 	}
 	defer f.Close()
-	c := Config{}
 	err = json.NewDecoder(f).Decode(&c)
 	if c.MarathonPort == 0 {
 		c.MarathonPort = 8080
@@ -34,16 +34,16 @@ func LoadConfig(configPath string) (*Config, error) {
 		c.HttpPort = 8000
 	}
 	if c.TemplateFile == "" {
-		return nil, fmt.Errorf("template is required")
+		return c, fmt.Errorf("template is required")
 	}
 	if c.TargetFile == "" {
-		return nil, fmt.Errorf("target is required")
+		return c, fmt.Errorf("target is required")
 	}
 	if c.MarathonHost == "" {
-		return nil, fmt.Errorf("marathon-host is required")
+		return c, fmt.Errorf("marathon-host is required")
 	}
 	if len(c.Services) == 0 {
-		return nil, fmt.Errorf("At least one service is required in `services`")
+		return c, fmt.Errorf("At least one service is required in `services`")
 	}
-	return &c, nil
+	return c, nil
 }

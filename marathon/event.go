@@ -1,16 +1,18 @@
 package marathon
 
 import (
-	"fmt"
+	"log"
 	"time"
 )
 
-type RawEvent map[string]interface{}
+type Event struct {
+	EventType string `json:"eventType"`
+	Timestamp string `json:"timestamp"`
+}
 
 /*
 API Request: Fired every time marathon receives an API request that modifies an app
 Deployment: Fired whenever a deployment is started or stopped
-*/
 
 type DeploymentEvent struct {
 	eventType string `json:"eventType"`
@@ -19,13 +21,15 @@ type DeploymentEvent struct {
 	version   string `json:"version"`
 }
 
-func (e RawEvent) Time() (*time.Time, error) {
-	ts, ok := e["timestamp"]
-	if !ok {
-		return nil, fmt.Errorf("timestamp field not found in raw event")
+*/
+
+func (e *Event) Time() time.Time {
+	t, err := time.Parse(time.RFC3339, e.Timestamp)
+	if err != nil {
+		log.Printf(err.Error())
+		return time.Time{}
 	}
-	t, err := time.Parse(time.RFC3339, ts.(string))
-	return &t, err
+	return t
 }
 
 // func (e RawEvent) Decode() (...?) {}

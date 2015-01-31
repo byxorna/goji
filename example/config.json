@@ -4,5 +4,6 @@
     { "app-id": "/sre/byxorna/site", "vhost": "pipefail.service.iata.tumblr.net" }
   ],
   "template": "example/test.tmpl",
-  "target": "./output.cfg"
+  "target": "./output.cfg",
+  "delay": 5
 }

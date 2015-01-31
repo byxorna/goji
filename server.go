@@ -1,8 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
-	"io"
+	"github.com/byxorna/marathon_http_proxy_generator/marathon"
+	"io/ioutil"
 	"log"
 	"net/http"
 )
@@ -13,11 +15,31 @@ func ListenForEvents(listenAddr string) error {
 }
 
 func handleEvent(res http.ResponseWriter, req *http.Request) {
-	//TODO check for POST, what appId it is, what type of event, etc
-	log.Printf("Got an event!")
-	io.WriteString(res, "hello, world!\n")
+	log.Printf("%s %s %s %s\n", req.Method, req.RemoteAddr, req.RequestURI, req.Proto)
+	body, err := ioutil.ReadAll(req.Body)
 	res.Header().Set("Content-Type", "text/plain")
-	eventChan <- "fixme"
+	if err != nil {
+		log.Printf(err.Error())
+		fmt.Fprintf(res, "Error reading event body")
+		res.WriteHeader(http.StatusBadRequest)
+		return
+	}
 	fmt.Fprintf(res, "Thanks for the event!")
-	log.Printf("All done")
+	// lets deal with parsing and identifying the event out of the request handler
+	go determineEventRelevancy(body)
+}
+
+func determineEventRelevancy(body []byte) {
+	e := marathon.Event{}
+	err := json.Unmarshal(body, &e)
+	if err != nil {
+		log.Printf("Unable to decode event body: %s\n", err.Error())
+		return
+	}
+	log.Printf("Received event %s generated at %s\n", e.EventType, e.Time())
+	switch e.EventType {
+	case "api_post_event":
+		eventChan <- e.EventType
+	}
+
 }

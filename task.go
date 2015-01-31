@@ -52,8 +52,8 @@ type Task struct {
 	version   string `json:"version"`
 }
 
-func NewTaskClient(cfg *Config) *TaskClient {
-	return &TaskClient{
+func NewTaskClient(cfg *Config) TaskClient {
+	return TaskClient{
 		host:   cfg.MarathonHost,
 		port:   cfg.MarathonPort,
 		client: &http.Client{},
@@ -103,7 +103,7 @@ func (c *TaskClient) GetTasks(appId string) ([]Task, error) {
 
 // populates the list of tasks in each service
 // and clobber each service in the ServiceList's Tasks with a new set
-func (services *ServiceList) LoadAllAppTasks(tc *TaskClient) error {
+func (services *ServiceList) LoadAllAppTasks(tc TaskClient) error {
 	for i, service := range *services {
 		ts, err := tc.GetTasks(service.AppId)
 		if err != nil {
