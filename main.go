@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/byxorna/marathon_http_proxy_generator/marathon"
 	"log"
 	"time"
 )
@@ -14,7 +15,7 @@ var (
 	services ServiceList
 	// listen to this channel for update triggers
 	eventChan chan string
-	client    TaskClient
+	client    marathon.Client
 )
 
 func init() {
@@ -32,7 +33,7 @@ func main() {
 		log.Fatal(err)
 	}
 	log.Printf("Loaded config: %s\n", config)
-	client = NewTaskClient(&config)
+	client = marathon.NewClient(config.MarathonHost, config.MarathonPort)
 	services = config.Services
 
 	log.Printf("Loading tasks from marathon\n")
@@ -68,35 +69,45 @@ func main() {
 	// every event hits eventChan (buffer 10 events)
 	eventChan = make(chan string, 10)
 
-	// http://blog.gopheracademy.com/advent-2013/day-24-channel-buffering-patterns/
 	go func() {
-		//coalesce events within a window
-		ticker := time.NewTimer(0)
-		var timerCh <-chan time.Time
-		i := 0
-		for {
-			select {
-			case e := <-eventChan:
-				// count how many events we coalesce, for fun
-				i = i + 1
-				log.Printf("Deferring update with event %s. (%d events so far)\n", e, i)
-				log.Printf("%s\n", timerCh)
-				if timerCh == nil {
-					ticker.Reset(time.Duration(config.TemplateDelay) * time.Second)
-					timerCh = ticker.C
-				}
-			case <-timerCh:
-				log.Printf("Coalesced %d events\n", i)
-				err := LoadTasksAndEmitConfig()
-				if err != nil {
-					log.Printf(err.Error())
-				}
-				i = 0
-				timerCh = nil
+		coalesceEvents(eventChan, time.Duration(config.TemplateDelay)*time.Second, func() {
+			err := LoadTasksAndEmitConfig()
+			if err != nil {
+				log.Printf(err.Error())
 			}
-		}
-
+		})
 	}()
+	/*
+		// http://blog.gopheracademy.com/advent-2013/day-24-channel-buffering-patterns/
+		go func() {
+			//coalesce events within a window
+			ticker := time.NewTimer(0)
+			var timerCh <-chan time.Time
+			i := 0
+			for {
+				select {
+				case e := <-eventChan:
+					// count how many events we coalesce, for fun
+					i = i + 1
+					log.Printf("Deferring update with event %s. (%d events so far)\n", e, i)
+					// log.Printf("%s\n", timerCh)
+					if timerCh == nil {
+						ticker.Reset(time.Duration(config.TemplateDelay) * time.Second)
+						timerCh = ticker.C
+					}
+				case <-timerCh:
+					log.Printf("Coalesced %d events\n", i)
+					err := LoadTasksAndEmitConfig()
+					if err != nil {
+						log.Printf(err.Error())
+					}
+					i = 0
+					timerCh = nil
+				}
+			}
+
+		}()
+	*/
 
 	var listenAddr = fmt.Sprintf(":%d", config.HttpPort)
 	log.Printf("Listening for marathon events on %s/event\n", listenAddr)

@@ -1,4 +1,4 @@
-package main
+package marathon
 
 import (
 	"encoding/json"
@@ -37,32 +37,23 @@ import (
   }
 */
 
-type TaskClient struct {
+type Client struct {
 	host   string
 	port   int
 	client *http.Client
 }
 
-type Task struct {
-	Id        string `json:"id"`
-	Ports     []int  `json:"ports"`
-	Host      string `json:"host"`
-	stagedAt  string `json:"stagedAt"`
-	startedAt string `json:"startedAt"`
-	version   string `json:"version"`
-}
-
-func NewTaskClient(cfg *Config) TaskClient {
-	return TaskClient{
-		host:   cfg.MarathonHost,
-		port:   cfg.MarathonPort,
+func NewClient(host string, port int) Client {
+	return Client{
+		host:   host,
+		port:   port,
 		client: &http.Client{},
 	}
 }
 
 //TODO this may be more efficient to hit /v2/tasks?status=running
 // and filter for the apps we care about
-func (c *TaskClient) GetTasks(appId string) ([]Task, error) {
+func (c *Client) GetTasks(appId string) ([]Task, error) {
 	url := fmt.Sprintf("http://%s:%d/v2/apps%s/tasks", c.host, c.port, appId)
 	log.Printf("Getting %s\n", url)
 	req, err := http.NewRequest("GET", url, nil)
@@ -99,19 +90,4 @@ func (c *TaskClient) GetTasks(appId string) ([]Task, error) {
 	t := js["tasks"]
 	log.Printf("Found %d tasks for appId %s: %s\n", len(t), appId, t)
 	return t, nil
-}
-
-// populates the list of tasks in each service
-// and clobber each service in the ServiceList's Tasks with a new set
-func (services *ServiceList) LoadAllAppTasks(tc TaskClient) error {
-	for i, service := range *services {
-		ts, err := tc.GetTasks(service.AppId)
-		if err != nil {
-			return err
-		}
-		// I still really dont grok how go's pointers work for mutability
-		// but this works...
-		(*services)[i].Tasks = &ts
-	}
-	return nil
 }
