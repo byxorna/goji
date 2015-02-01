@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/byxorna/marathon_http_proxy_generator/marathon"
+	"github.com/byxorna/goji/marathon"
 	"log"
 	"time"
 )

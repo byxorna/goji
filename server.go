@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/byxorna/marathon_http_proxy_generator/marathon"
+	"github.com/byxorna/goji/marathon"
 	"io/ioutil"
 	"log"
 	"net/http"

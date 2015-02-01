@@ -1,6 +1,6 @@
 package main
 
-import "github.com/byxorna/marathon_http_proxy_generator/marathon"
+import "github.com/byxorna/goji/marathon"
 
 type Service struct {
 	Vhost string           `json:"vhost"`

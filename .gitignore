@@ -25,4 +25,5 @@ _testmain.go
 
 *.swp
 marathon_http_proxy_generator
+goji
 output.cfg

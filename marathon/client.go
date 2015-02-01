@@ -62,7 +62,7 @@ func (c *Client) GetTasks(appId string) ([]Task, error) {
 	}
 
 	req.Header.Add("Accept", "application/json")
-	req.Header.Add("User-Agent", "byxorna/marathon_http_proxy_generator")
+	req.Header.Add("User-Agent", "byxorna/goji")
 	resp, err := c.client.Do(req)
 
 	//TODO this feels awfully wordy. I miss ruby's brevity....
