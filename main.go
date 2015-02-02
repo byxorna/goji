@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"github.com/byxorna/goji/marathon"
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 )
 
@@ -16,6 +19,7 @@ var (
 	// listen to this channel for update triggers
 	eventChan chan string
 	client    marathon.Client
+	sigChan   chan os.Signal
 )
 
 func init() {
@@ -36,6 +40,10 @@ func main() {
 	client = marathon.NewClient(config.MarathonHost, config.MarathonPort)
 	services = config.Services
 
+	// lets let people know when we get a signal, so we can clean up
+	sigChan = make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+
 	log.Printf("Loading tasks from marathon\n")
 	err = services.LoadAllAppTasks(client)
 	if err != nil {
@@ -50,7 +58,6 @@ func main() {
 				log.Printf("  %s:%d\n", task.Host, port)
 			}
 		}
-
 	}
 
 	// spit out the first config before we start listening for events
@@ -77,37 +84,6 @@ func main() {
 			}
 		})
 	}()
-	/*
-		// http://blog.gopheracademy.com/advent-2013/day-24-channel-buffering-patterns/
-		go func() {
-			//coalesce events within a window
-			ticker := time.NewTimer(0)
-			var timerCh <-chan time.Time
-			i := 0
-			for {
-				select {
-				case e := <-eventChan:
-					// count how many events we coalesce, for fun
-					i = i + 1
-					log.Printf("Deferring update with event %s. (%d events so far)\n", e, i)
-					// log.Printf("%s\n", timerCh)
-					if timerCh == nil {
-						ticker.Reset(time.Duration(config.TemplateDelay) * time.Second)
-						timerCh = ticker.C
-					}
-				case <-timerCh:
-					log.Printf("Coalesced %d events\n", i)
-					err := LoadTasksAndEmitConfig()
-					if err != nil {
-						log.Printf(err.Error())
-					}
-					i = 0
-					timerCh = nil
-				}
-			}
-
-		}()
-	*/
 
 	var listenAddr = fmt.Sprintf(":%d", config.HttpPort)
 	log.Printf("Listening for marathon events on %s/event\n", listenAddr)

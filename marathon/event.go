@@ -31,5 +31,3 @@ func (e *Event) Time() time.Time {
 	}
 	return t
 }
-
-// func (e RawEvent) Decode() (...?) {}

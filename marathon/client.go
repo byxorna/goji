@@ -91,3 +91,82 @@ func (c *Client) GetTasks(appId string) ([]Task, error) {
 	log.Printf("Found %d tasks for appId %s: %s\n", len(t), appId, t)
 	return t, nil
 }
+
+func (c *Client) HasCallback(callback string) (bool, error) {
+	url := fmt.Sprintf("http://%s:%d/v2/eventSubscriptions", c.host, c.port)
+	log.Printf("Fetching event subscriptions from %s\n", url)
+	resp, err := c.client.Get(url)
+	if err != nil {
+		return false, err
+	}
+
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return false, err
+	}
+
+	// 400: {"message":"http event callback system is not running on this Marathon instance. Please re-start this instance with \"--event_subscriber http_callback\"."}
+	// 200: {"callbackUrls":[]}
+	if resp.StatusCode != 200 {
+		return false, fmt.Errorf("Error: http event callback system is not running on %s:%d. Please re-start this instance with \"--event_subscriber http_callback\"", c.host, c.port)
+	}
+
+	var js map[string][]string
+	err = json.Unmarshal(body, &js)
+	if err != nil {
+		return false, err
+	}
+	for _, cb := range js["callbackUrls"] {
+		if cb == callback {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+func (c *Client) RegisterCallback(callback string) error {
+	url := fmt.Sprintf("http://%s:%d/v2/eventSubscriptions?callbackUrl=%s", c.host, c.port, callback)
+	log.Printf("Adding event subscription %s to %s\n", callback, url)
+	req, err := http.NewRequest("POST", url, nil)
+	if err != nil {
+		return err
+	}
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("User-Agent", "byxorna/goji")
+	resp, err := c.client.Do(req)
+
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("Error: unable to register callback: %s", body)
+	}
+	return nil
+
+}
+
+// TODO this could use some DRYing up with RegisterCallback
+func (c *Client) RemoveCallback(callback string) error {
+	url := fmt.Sprintf("http://%s:%d/v2/eventSubscriptions?callbackUrl=%s", c.host, c.port, callback)
+	log.Printf("Removing event subscription %s from %s\n", callback, url)
+	req, err := http.NewRequest("DELETE", url, nil)
+	if err != nil {
+		return err
+	}
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("User-Agent", "byxorna/goji")
+	resp, err := c.client.Do(req)
+
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("Error: unable to register callback: %s", body)
+	}
+	return nil
+}

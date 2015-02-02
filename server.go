@@ -7,9 +7,34 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 )
 
 func ListenForEvents(listenAddr string) error {
+	hostname, err := os.Hostname()
+	if err != nil {
+		return err
+	}
+	cb := fmt.Sprintf("http://%s:%d/event", hostname, config.HttpPort)
+	cbRegistered, err := client.HasCallback(cb)
+	if err != nil {
+		return err
+	}
+	if !cbRegistered {
+		client.RegisterCallback(cb)
+	} else {
+		log.Printf("Event callback already registered; skipping registration\n")
+	}
+	// cleanup registered callback if we catch a signal
+	go func() {
+		s := <-sigChan
+		log.Printf("Cleaning up registered callback after signal %s\n", s)
+		err := client.RemoveCallback(cb)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+		os.Exit(0)
+	}()
 	http.HandleFunc("/event", handleEvent)
 	return http.ListenAndServe(listenAddr, nil)
 }
@@ -37,9 +62,16 @@ func determineEventRelevancy(body []byte) {
 		return
 	}
 	log.Printf("Received event %s generated at %s\n", e.EventType, e.Time())
+	var handleEvent = func() {
+		eventChan <- e.EventType
+	}
 	switch e.EventType {
 	case "api_post_event":
-		eventChan <- e.EventType
+		handleEvent()
+	case "status_update_event":
+		handleEvent()
+	default:
+		log.Printf("Ignoring event type %s\n", e.EventType)
 	}
 
 }
