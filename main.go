@@ -13,9 +13,9 @@ import (
 
 var (
 	configPath string
-  // override the target in config
+	// override the target in config
 	target string
-	config     Config
+	config Config
 	// current state of services we know about
 	services ServiceList
 	// listen to this channel for update triggers
@@ -41,10 +41,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-  // allow -target to override the target specified in config for CLI testing
-  if target != "" {
-    config.TargetFile = target
-  }
+	// allow -target to override the target specified in config for CLI testing
+	if target != "" {
+		config.TargetFile = target
+	}
 	log.Printf("Loaded config: %s\n", config)
 	client = marathon.NewClient(config.MarathonHost, config.MarathonPort)
 	services, err = NewServiceList(config.Services)
