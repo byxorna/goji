@@ -85,7 +85,8 @@ $ go build
 $ ./goji -help
 Usage of ./goji:
   -conf="": config json file
-  -server=false: listen for marathon events
+  -server=false: start a HTTP server listening for Marathon events
+  -target="": target file to write to
 ```
 
 ## More information
