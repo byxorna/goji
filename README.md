@@ -77,7 +77,7 @@ This is a test template
 Sweet!
 ```
 
-A much more useful template is available in ```example/haproxy.tmpl```
+A much more useful template is available in ```example/haproxy.tmpl``` and ```example/nginx.tmpl```
 
 ## Build
 

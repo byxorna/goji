@@ -71,8 +71,13 @@ func NewService(cfg ConfigService) (Service, error) {
 }
 
 // replaces / with ::, useful for creating haproxy identifiers
-func (s *Service) EscapeAppId() string {
+func (s *Service) EscapeAppIdColon() string {
 	return strings.Replace(s.AppId, "/", "::", -1)
+}
+
+// replaces / with _, useful for creating nginx identifiers
+func (s *Service) EscapeAppIdUnderscore() string {
+	return strings.Replace(s.AppId, "/", "_", -1)
 }
 
 // returns a copy of the list of tasks, or [] if tasks is a nil pointer
