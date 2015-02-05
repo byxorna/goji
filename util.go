@@ -18,13 +18,13 @@ func coalesceEvents(ch <-chan string, window time.Duration, fn func()) {
 			// count how many events we coalesce, for fun
 			i = i + 1
 			log.Printf("Coalescing event %s. (%d events so far)\n", e, i)
-			log.Printf("%s\n", timerCh)
+			//log.Printf("%s\n", timerCh)
 			if timerCh == nil {
 				ticker.Reset(window)
 				timerCh = ticker.C
 			}
 		case <-timerCh:
-			log.Printf("Coalesced %d events\n", i)
+			log.Printf("Coalesced %d events in %s\n", i, window)
 			fn()
 			i = 0
 			timerCh = nil

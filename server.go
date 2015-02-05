@@ -66,8 +66,6 @@ func determineEventRelevancy(body []byte) {
 		eventChan <- e.EventType
 	}
 	switch e.EventType {
-	case "api_post_event":
-		handleEvent()
 	case "status_update_event":
 		handleEvent()
 	default:
