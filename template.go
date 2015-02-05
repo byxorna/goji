@@ -4,8 +4,11 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
+  "os"
 	"log"
 	"text/template"
+  "crypto/sha256"
+  "encoding/hex"
 )
 
 // given services and a template, do the templating
@@ -38,6 +41,27 @@ func LoadTasksAndEmitConfig() error {
 	if err != nil {
 		return fmt.Errorf("Unable to compile template: %s", err.Error())
 	}
+
+  // compute hash of previous and current file
+  if _, err := os.Stat(config.TargetFile) ; err == nil {
+    old_contents, err := ioutil.ReadFile(config.TargetFile)
+    if err != nil {
+      return err
+    }
+    h := sha256.New()
+    h.Write(old_contents)
+    old_hash := hex.EncodeToString(h.Sum(nil))
+    h.Reset()
+    h.Write([]byte(output))
+    new_hash := hex.EncodeToString(h.Sum(nil))
+    if old_hash == new_hash {
+      log.Printf("New file is the same as whats on disk\n")
+      return nil
+    }
+    //log.Printf("Computed old %s and new %s\n",old_hash, new_hash)
+  } else {
+    log.Printf("Skipping checksum, old file doesnt exist\n")
+  }
 
 	log.Printf("Writing config to %s\n", config.TargetFile)
 	err = WriteConfig(output, config.TargetFile)

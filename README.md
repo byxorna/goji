@@ -43,7 +43,6 @@ Generates a config like one-shot mode, but ```goji``` will then listen on ```htt
 * ```target```: Write templated configuration to this location (required)
 * ```http-port```: What port to start an HTTP event listener on to register and receive event messages from marathon (optional, default: 8000)
 * ```delay```: Coalesce events within this window before triggering a task get and config emit (optional, default: 0)
-* ```listen```: Register eventhandler with Marathon, and listen on ```http-port``` for events (optional, default: true)
 * ```services```: List of Services. A service is an object with a ```app-id``` key of the marathon app ID you want tasks from, and a ```vhost``` that will be passed into your template for each service. See below.
 
 ### Service Configuration

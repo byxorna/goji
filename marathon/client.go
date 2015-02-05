@@ -88,7 +88,7 @@ func (c *Client) GetTasks(appId string) ([]Task, error) {
 		return nil, err
 	}
 	t := js["tasks"]
-	log.Printf("Found %d tasks for appId %s: %s\n", len(t), appId, t)
+	log.Printf("Found %d tasks for appId %s\n", len(t), appId)
 	return t, nil
 }
 

@@ -45,43 +45,17 @@ func main() {
 		log.Fatal(err.Error())
 	}
 	for _, s := range services {
-		log.Printf("%s has is HTTP: %t %s\n", s.AppId, s.HTTPProtocol(), s.Protocol)
-		log.Printf("%s has is Health check: %s\n", s.AppId, s.HealthCheckPath())
+		log.Printf("Loaded %s service %s at port %d\n", s.Protocol, s.AppId, s.Port)
 	}
 
 	// lets let people know when we get a signal, so we can clean up
 	sigChan = make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 
-	log.Printf("Loading tasks from marathon\n")
-	err = services.LoadAllAppTasks(client)
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-
-	// just print out what apps and tasks we found
-	for _, service := range services {
-		tasks := service.Tasks()
-		log.Printf("Found %s app %s with %d tasks\n", service.Protocol, service.AppId, len(tasks))
-		for _, task := range tasks {
-			for _, port := range task.Ports {
-				log.Printf("  %s:%d\n", task.Host, port)
-			}
-		}
-	}
-
-	// spit out the first config before we start listening for events
-	log.Printf("Templating %s with %d services\n", config.TemplateFile, len(services))
-	output, err := Template(services, config.TemplateFile)
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	log.Printf("Writing config to %s\n", config.TargetFile)
-	err = WriteConfig(output, config.TargetFile)
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	log.Printf("Wrote %s!\n", config.TargetFile)
+  err = LoadTasksAndEmitConfig()
+  if err != nil {
+    log.Fatal(err.Error())
+  }
 
 	if server {
 		// every event hits eventChan (buffer 10 events)

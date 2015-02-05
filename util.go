@@ -31,3 +31,4 @@ func coalesceEvents(ch <-chan string, window time.Duration, fn func()) {
 		}
 	}
 }
+
