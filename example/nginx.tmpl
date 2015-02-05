@@ -1,14 +1,15 @@
-http {
-{{range $index, $service := . }}{{if $service.HTTPProtocol }}
-  upstream {{$service.EscapeAppIdUnderscore}} { {{ range $i, $task := $service.Tasks }}{{ range $j, $port := $task.Ports }}
-    server {{ $task.Host }}:{{ $port }} slow_start=2;{{end}}{{end}}
-  }
-  server {
-    # application {{$service.AppId}} at domain {{$service.Vhost}}
-    listen 80 default_server;
-    server_name {{$service.Vhost}};
-    root  /srv/www/default/public;
-    proxy_pass http://{{$service.EscapeAppIdUnderscore}};
-  }
-{{end}}{{end}}
+# should be included in a conf.d directory
+{{range $index, $service := . }}{{if $service.HTTPProtocol }}{{ $backend := $service.EscapeAppIdUnderscore }}
+upstream {{$backend}} { {{ range $i, $task := $service.Tasks }}{{ range $j, $port := $task.Ports }}
+  server {{ $task.Host }}:{{ $port }};{{end}}{{end}}
 }
+server {
+  # application {{$service.AppId}} at domain {{$service.Vhost}}
+  listen 80;
+  server_name {{$service.Vhost}};
+  root  /srv/www/default/public;
+  location / {
+    proxy_pass http://{{$backend}};
+  }
+}
+{{end}}{{end}}
