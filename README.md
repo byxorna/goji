@@ -79,4 +79,6 @@ https://mesosphere.github.io/marathon/docs/event-bus.html
 * Fix up specifying a health-check in a service (does this work?)
 * event coalescing is a bit wonky and fires on very first event
 * Run a command after generation (check and reload)
+* Write test suite
+* Setup travis-ci builds
 
