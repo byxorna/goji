@@ -52,10 +52,10 @@ func main() {
 	sigChan = make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 
-  err = LoadTasksAndEmitConfig()
-  if err != nil {
-    log.Fatal(err.Error())
-  }
+	err = LoadTasksAndEmitConfig()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 
 	if server {
 		// every event hits eventChan (buffer 10 events)
