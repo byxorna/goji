@@ -75,8 +75,8 @@ https://mesosphere.github.io/marathon/docs/event-bus.html
 
 ## TODO
 
+* Fix Service to specify TCP or HTTP
+* Fix up specifying a health-check in a service (does this work?)
 * event coalescing is a bit wonky and fires on very first event
 * Run a command after generation (check and reload)
-* write flags for all config options???
-* Write documentation
 
