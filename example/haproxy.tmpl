@@ -32,8 +32,8 @@ defaults
 frontend http-in
         bind *:80
         {{ range $index, $service := . }}
-        acl {{ $service.EscapeAppId() }}-aclrule hdr(host) {{ $service.Vhost }}
-        use_backend {{ $service.EscapeAppId() }}-cluster if {{ $service.EscapeAppId() }}-aclrule
+        acl {{ $service.EscapeAppId }}-aclrule hdr(host) {{ $service.Vhost }}
+        use_backend {{ $service.EscapeAppId }}-cluster if {{ $service.EscapeAppId }}-aclrule
         {{ end }}
 
         stats enable
@@ -42,7 +42,7 @@ frontend http-in
         stats uri /haproxy_stats
 
 {{ range $index, $service := . }}
-backend {{ $service.EscapeAppId() }}-cluster{{ if $service.HealthCheckPath }}
+backend {{ $service.EscapeAppId }}-cluster{{ if $service.HealthCheckPath }}
         option httpchk GET {{ $service.HealthCheckPath }}
         {{ end }}
         balance roundrobin
