@@ -13,6 +13,8 @@ import (
 
 var (
 	configPath string
+  // override the target in config
+	target string
 	config     Config
 	// current state of services we know about
 	services ServiceList
@@ -26,6 +28,7 @@ var (
 func init() {
 	flag.StringVar(&configPath, "conf", "", "config json file")
 	flag.BoolVar(&server, "server", false, "start a HTTP server listening for Marathon events")
+	flag.StringVar(&target, "target", "", "target file to write to")
 	flag.Parse()
 }
 
@@ -38,6 +41,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+  // allow -target to override the target specified in config for CLI testing
+  if target != "" {
+    config.TargetFile = target
+  }
 	log.Printf("Loaded config: %s\n", config)
 	client = marathon.NewClient(config.MarathonHost, config.MarathonPort)
 	services, err = NewServiceList(config.Services)
