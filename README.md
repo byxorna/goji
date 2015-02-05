@@ -3,6 +3,20 @@ Goji: Marathon Task Proxy Config Generator
 
 ```goji``` is a server that registers with a Marathon instance, consumes events, and emits templated configs containing information about running tasks for a set of apps that you care about.
 
+## Run
+
+### One-shot mode
+
+Just hit up marathon for the task list, generate a config, and write it out.
+
+```./goji -conf myconfig.json```
+
+### Server
+
+Generates a config like one-shot mode, but ```goji``` will then listen on ```http-port``` for events from Marathon.
+
+```./goji -conf myconfig.json -server```
+
 ## Configuration
 
 ```goji``` takes a config file, formatted in json, as the ```-conf``` option. It tells ```goji``` information about your marathon instance, what services (app IDs) to query for tasks, and where and with what template to write configs out.
@@ -28,6 +42,7 @@ Goji: Marathon Task Proxy Config Generator
 * ```target```: Write templated configuration to this location (required)
 * ```http-port```: What port to start an HTTP event listener on to register and receive event messages from marathon (optional, default: 8000)
 * ```delay```: Coalesce events within this window before triggering a task get and config emit (optional, default: 0)
+* ```listen```: Register eventhandler with Marathon, and listen on ```http-port``` for events (optional, default: true)
 * ```services```: List of Services. A service is an object with a ```app-id``` key of the marathon app ID you want tasks from, and a ```vhost``` that will be passed into your template for each service.
 
 
@@ -64,5 +79,4 @@ https://mesosphere.github.io/marathon/docs/event-bus.html
 * Run a command after generation (check and reload)
 * write flags for all config options???
 * Write documentation
-* Make a one-shot mode, and make listening for events optional
 

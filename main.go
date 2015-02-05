@@ -20,10 +20,12 @@ var (
 	eventChan chan string
 	client    marathon.Client
 	sigChan   chan os.Signal
+	server    bool
 )
 
 func init() {
 	flag.StringVar(&configPath, "conf", "", "config json file")
+	flag.BoolVar(&server, "server", false, "start a HTTP server listening for Marathon events")
 	flag.Parse()
 }
 
@@ -73,20 +75,22 @@ func main() {
 	}
 	log.Printf("Wrote %s!\n", config.TargetFile)
 
-	// every event hits eventChan (buffer 10 events)
-	eventChan = make(chan string, 10)
+	if server {
+		// every event hits eventChan (buffer 10 events)
+		eventChan = make(chan string, 10)
 
-	go func() {
-		coalesceEvents(eventChan, time.Duration(config.TemplateDelay)*time.Second, func() {
-			err := LoadTasksAndEmitConfig()
-			if err != nil {
-				log.Printf(err.Error())
-			}
-		})
-	}()
+		go func() {
+			coalesceEvents(eventChan, time.Duration(config.TemplateDelay)*time.Second, func() {
+				err := LoadTasksAndEmitConfig()
+				if err != nil {
+					log.Printf(err.Error())
+				}
+			})
+		}()
 
-	var listenAddr = fmt.Sprintf(":%d", config.HttpPort)
-	log.Printf("Listening for marathon events on %s/event\n", listenAddr)
-	log.Fatal(ListenForEvents(listenAddr))
+		var listenAddr = fmt.Sprintf(":%d", config.HttpPort)
+		log.Printf("Listening for marathon events on %s/event\n", listenAddr)
+		log.Fatal(ListenForEvents(listenAddr))
+	}
 
 }
