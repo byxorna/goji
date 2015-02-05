@@ -40,7 +40,14 @@ func main() {
 	}
 	log.Printf("Loaded config: %s\n", config)
 	client = marathon.NewClient(config.MarathonHost, config.MarathonPort)
-	services = config.Services
+	services, err = NewServiceList(config.Services)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	for _, s := range services {
+		log.Printf("%s has is HTTP: %t %s\n", s.AppId, s.HTTPProtocol(), s.Protocol)
+		log.Printf("%s has is Health check: %s\n", s.AppId, s.HealthCheckPath())
+	}
 
 	// lets let people know when we get a signal, so we can clean up
 	sigChan = make(chan os.Signal, 1)
@@ -54,8 +61,9 @@ func main() {
 
 	// just print out what apps and tasks we found
 	for _, service := range services {
-		log.Printf("Found app %s with %d tasks\n", service.AppId, len(*service.Tasks))
-		for _, task := range *service.Tasks {
+		tasks := service.Tasks()
+		log.Printf("Found %s app %s with %d tasks\n", service.Protocol, service.AppId, len(tasks))
+		for _, task := range tasks {
 			for _, port := range task.Ports {
 				log.Printf("  %s:%d\n", task.Host, port)
 			}

@@ -27,7 +27,8 @@ Generates a config like one-shot mode, but ```goji``` will then listen on ```htt
   "marathon-port":8080,
   "services": [
     { "app-id": "/sre/byxorna/site", "vhost": "pipefail.service.iata.tumblr.net" },
-    { "app-id": "/sre/byxorna/app1", "vhost": "app1.service.iata.tumblr.net" }
+    { "app-id": "/sre/byxorna/app1", "vhost": "app1.service.iata.tumblr.net", "protocol":"TCP" },
+    { "app-id": "/sre/byxorna/webapp", "vhost": "web.service.iata.tumblr.net", "protocol":"HTTP", "health-check":"/_health" }
   ],
   "template": "templates/haproxy.tmpl",
   "target": "/tmp/haproxy.cfg",
@@ -43,7 +44,24 @@ Generates a config like one-shot mode, but ```goji``` will then listen on ```htt
 * ```http-port```: What port to start an HTTP event listener on to register and receive event messages from marathon (optional, default: 8000)
 * ```delay```: Coalesce events within this window before triggering a task get and config emit (optional, default: 0)
 * ```listen```: Register eventhandler with Marathon, and listen on ```http-port``` for events (optional, default: true)
-* ```services```: List of Services. A service is an object with a ```app-id``` key of the marathon app ID you want tasks from, and a ```vhost``` that will be passed into your template for each service.
+* ```services```: List of Services. A service is an object with a ```app-id``` key of the marathon app ID you want tasks from, and a ```vhost``` that will be passed into your template for each service. See below.
+
+### Service Configuration
+
+```
+{
+  // marathon app id for your application
+  "app-id": "/sre/byxorna/webapp",
+  // a vhost that is associated with the service. Useful for doing nginx vhosting for http apps
+  "vhost": "web.service.iata.tumblr.net",
+  // TCP or HTTP, defaults to HTTP
+  "protocol":"HTTP",
+  // if the protocol of the service is HTTP, you can specify a health check URI here
+  "health-check":"/_health",
+  // what service port to use. Defaults to 80, but you can override for TCP services
+  "port":80
+}
+```
 
 
 ## Templates
@@ -59,6 +77,8 @@ This is a test template
 Sweet!
 ```
 
+A much more useful template is available in ```example/haproxy.tmpl```
+
 ## Build
 
 ```
@@ -66,6 +86,7 @@ $ go build
 $ ./goji -help
 Usage of ./goji:
   -conf="": config json file
+  -server=false: listen for marathon events
 ```
 
 ## More information
@@ -75,8 +96,6 @@ https://mesosphere.github.io/marathon/docs/event-bus.html
 
 ## TODO
 
-* Fix Service to specify TCP or HTTP
-* Fix up specifying a health-check in a service (does this work?)
 * event coalescing is a bit wonky and fires on very first event
 * Run a command after generation (check and reload)
 * Write test suite

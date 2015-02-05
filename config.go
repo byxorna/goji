@@ -10,13 +10,23 @@ type Config struct {
 	// localhost
 	MarathonHost string `json:"marathon-host,omitempty"`
 	// 8080
-	MarathonPort int         `json:"marathon-port"`
-	Services     ServiceList `json:"services,omitempty"`
-	TemplateFile string      `json:"template,omitempty"`
-	TargetFile   string      `json:"target,omitempty"`
+	MarathonPort int             `json:"marathon-port"`
+	Services     []ConfigService `json:"services,omitempty"`
+	TemplateFile string          `json:"template,omitempty"`
+	TargetFile   string          `json:"target,omitempty"`
 	// port upon which to listen for events from marathon
 	HttpPort      int `json:"http-port"`
 	TemplateDelay int `json:"delay"`
+}
+
+// the user defined representation of a service
+// passed into NewService to create an actual Service struct which does validation
+type ConfigService struct {
+	Vhost           string       `json:"vhost"`
+	AppId           string       `json:"app-id"`
+	HealthCheckPath string       `json:"health-check"`
+	Protocol        ProtocolType `json:"protocol"`
+	Port            int          `json:"port"`
 }
 
 func LoadConfig(configPath string) (Config, error) {
@@ -45,5 +55,6 @@ func LoadConfig(configPath string) (Config, error) {
 	if len(c.Services) == 0 {
 		return c, fmt.Errorf("At least one service is required in `services`")
 	}
+
 	return c, nil
 }
