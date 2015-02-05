@@ -1,0 +1,54 @@
+# most of this is lifted from github.com/QubitProducts/bamboo. Thanks!
+# This just serves to be an example haproxy configuration file
+global
+        log /dev/log    local0
+        log /dev/log    local1 notice
+        chroot /var/lib/haproxy
+        stats socket /run/haproxy/admin.sock mode 660 level admin
+        stats timeout 30s
+        user haproxy
+        group haproxy
+        daemon
+
+defaults
+        log     global
+        mode    http
+        option  httplog
+        option  dontlognull
+        timeout connect 5000
+        timeout client  50000
+        timeout server  50000
+
+        errorfile 400 /etc/haproxy/errors/400.http
+        errorfile 403 /etc/haproxy/errors/403.http
+        errorfile 408 /etc/haproxy/errors/408.http
+        errorfile 500 /etc/haproxy/errors/500.http
+        errorfile 502 /etc/haproxy/errors/502.http
+        errorfile 503 /etc/haproxy/errors/503.http
+        errorfile 504 /etc/haproxy/errors/504.http
+
+
+# Template Customization
+frontend http-in
+        bind *:80
+        {{ range $index, $service := . }}
+        acl {{ $service.EscapeAppId() }}-aclrule hdr(host) {{ $service.Vhost }}
+        use_backend {{ $service.EscapeAppId() }}-cluster if {{ $service.EscapeAppId() }}-aclrule
+        {{ end }}
+
+        stats enable
+        # CHANGE: Your stats credentials
+        stats auth admin:admin
+        stats uri /haproxy_stats
+
+{{ range $index, $service := . }}
+backend {{ $service.EscapeAppId() }}-cluster{{ if $service.HealthCheckPath }}
+        option httpchk GET {{ $service.HealthCheckPath }}
+        {{ end }}
+        balance roundrobin
+        option httpclose
+        option forwardfor
+        {{ range $i, $task := $service.Tasks }}{{ range $j, $port := $task.Ports }}
+        server {{ $task.Id }} {{ $task.Host }}:{{ $port }} {{ if $service.HealthCheckPath }} check inter 30000 {{ end }} {{ end }}{{end}}
+{{ end }}
+

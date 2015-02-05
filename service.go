@@ -1,13 +1,16 @@
 package main
 
-import "github.com/byxorna/goji/marathon"
+import (
+	"github.com/byxorna/goji/marathon"
+	"strings"
+)
 
 type Service struct {
 	Vhost string           `json:"vhost"`
 	AppId string           `json:"app-id"`
 	Tasks *[]marathon.Task `json:"-"`
-	//TODO add config for healthchecking, type of connection (HTTP/TCP), etc
-	//TODO possibly add configurable domains
+	//TODO add config for type of connection (HTTP/TCP), etc
+	HealthCheckPath string `json:"health-check"`
 }
 
 type ServiceList []Service
@@ -25,4 +28,8 @@ func (services *ServiceList) LoadAllAppTasks(c marathon.Client) error {
 		(*services)[i].Tasks = &ts
 	}
 	return nil
+}
+
+func (s *Service) EscapeAppId() string {
+	return strings.Replace(s.AppId, "/", "::", -1)
 }
