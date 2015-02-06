@@ -3,13 +3,14 @@ package main
 import (
 	"fmt"
 	"github.com/byxorna/goji/marathon"
+	"sort"
 	"strings"
 )
 
 type Service struct {
 	Vhost           string
 	AppId           string
-	tasks           *[]marathon.Task
+	tasks           *marathon.TaskList
 	healthCheckPath string
 	Protocol        ProtocolType
 	Port            int
@@ -34,6 +35,8 @@ func (services *ServiceList) LoadAllAppTasks(c marathon.Client) error {
 		}
 		// I still really dont grok how go's pointers work for mutability
 		// but this works...
+		// Make sure we sort tasks, so configs have a predictable ordering and dont change every run
+		sort.Sort(ts)
 		(*services)[i].tasks = &ts
 	}
 	return nil

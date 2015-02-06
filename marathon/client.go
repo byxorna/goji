@@ -53,7 +53,7 @@ func NewClient(host string, port int) Client {
 
 //TODO this may be more efficient to hit /v2/tasks?status=running
 // and filter for the apps we care about
-func (c *Client) GetTasks(appId string) ([]Task, error) {
+func (c *Client) GetTasks(appId string) (TaskList, error) {
 	url := fmt.Sprintf("http://%s:%d/v2/apps%s/tasks", c.host, c.port, appId)
 	log.Printf("Getting %s\n", url)
 	req, err := http.NewRequest("GET", url, nil)
