@@ -44,7 +44,7 @@ Generates a config like one-shot mode, but ```goji``` will then listen on ```htt
 * ```target```: Write templated configuration to this location (required)
 * ```http-port```: What port to start an HTTP event listener on to register and receive event messages from marathon (optional, default: 8000)
 * ```delay```: Coalesce events within this window before triggering a task get and config emit (optional, default: 0)
-* ```check-command```: Run a script after writing out the config (optional, default: empty)
+* ```command```: Run a script after writing out the config (optional, default: empty)
 * ```services```: List of Services. A service is an object with a ```app-id``` key of the marathon app ID you want tasks from, and a ```vhost``` that will be passed into your template for each service. See below.
 
 ### Service Configuration
@@ -64,6 +64,16 @@ Generates a config like one-shot mode, but ```goji``` will then listen on ```htt
 }
 ```
 
+## Commands
+
+The ```comand``` field in the config json specifies a command to run upon successful creation of a new config. This can be anything you want, but here are some useful examples:
+
+#### HAProxy Reloading
+```
+...
+"command":"cp /etc/haproxy/haproxy.cfg /etc/haproxy/haproxy.cfg.bak && cp ./haproxy.cfg /etc/haproxy/haproxy.cfg && service haproxy check && service haproxy restart || mv /etc/haproxy/haproxy.cfg.bak /etc/haproxy/haproxy.cfg",
+...
+```
 
 ## Templates
 
