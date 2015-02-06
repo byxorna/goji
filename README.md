@@ -83,7 +83,7 @@ The ```comand``` field in the config json specifies a command to run upon succes
 #### HAProxy Reloading
 ```
 ...
-"command":"cp /etc/haproxy/haproxy.cfg /etc/haproxy/haproxy.cfg.bak && cp ./haproxy.cfg /etc/haproxy/haproxy.cfg && service haproxy check && service haproxy restart || mv /etc/haproxy/haproxy.cfg.bak /etc/haproxy/haproxy.cfg",
+"command":"cp /etc/haproxy/haproxy.cfg /etc/haproxy/haproxy.cfg.bak && cp ./haproxy.cfg /etc/haproxy/haproxy.cfg && service haproxy check && service haproxy reload || (mv /etc/haproxy/haproxy.cfg.bak /etc/haproxy/haproxy.cfg && exit 1)",
 ...
 ```
 
