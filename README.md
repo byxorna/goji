@@ -32,6 +32,7 @@ Generates a config like one-shot mode, but ```goji``` will then listen on ```htt
   ],
   "template": "templates/haproxy.tmpl",
   "target": "/tmp/haproxy.cfg",
+  "check-command": "/usr/bin/check_haproxy_config /tmp/haproxy.cfg && cp /tmp/haproxy.cfg /etc/haproxy/haproxy.cfg && service haproxy reload",
   "http-port": 8000,
   "delay": 5
 }
@@ -43,6 +44,7 @@ Generates a config like one-shot mode, but ```goji``` will then listen on ```htt
 * ```target```: Write templated configuration to this location (required)
 * ```http-port```: What port to start an HTTP event listener on to register and receive event messages from marathon (optional, default: 8000)
 * ```delay```: Coalesce events within this window before triggering a task get and config emit (optional, default: 0)
+* ```check-command```: Run a script after writing out the config (optional, default: empty)
 * ```services```: List of Services. A service is an object with a ```app-id``` key of the marathon app ID you want tasks from, and a ```vhost``` that will be passed into your template for each service. See below.
 
 ### Service Configuration
@@ -97,7 +99,6 @@ https://mesosphere.github.io/marathon/docs/event-bus.html
 ## TODO
 
 * event coalescing is a bit wonky and fires on very first event
-* Run a command after generation (check and reload)
 * Write test suite
 * Setup travis-ci builds
 

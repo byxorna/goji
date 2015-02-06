@@ -61,7 +61,7 @@ func main() {
 
 	err = LoadTasksAndEmitConfig()
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Fatal(err)
 	}
 
 	if server {

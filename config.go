@@ -15,8 +15,9 @@ type Config struct {
 	TemplateFile string          `json:"template,omitempty"`
 	TargetFile   string          `json:"target,omitempty"`
 	// port upon which to listen for events from marathon
-	HttpPort      int `json:"http-port"`
-	TemplateDelay int `json:"delay"`
+	HttpPort      int    `json:"http-port"`
+	TemplateDelay int    `json:"delay"`
+	Command       string `json:"command"`
 }
 
 // the user defined representation of a service

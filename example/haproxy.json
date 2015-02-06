@@ -7,5 +7,6 @@
   ],
   "template": "example/haproxy.tmpl",
   "target": "./haproxy.cfg",
+  "command": "echo 'stdout' && echo 'stderr testing' >&2 && test -r ./haproxy.cfg",
   "delay": 5
 }

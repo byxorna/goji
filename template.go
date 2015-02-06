@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
@@ -8,6 +9,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"os/exec"
 	"text/template"
 )
 
@@ -27,6 +29,32 @@ func Template(services ServiceList, templateFile string) (string, error) {
 
 func WriteConfig(cfg string, outputFile string) error {
 	return ioutil.WriteFile(outputFile, []byte(cfg), 0644)
+}
+
+func RunCommand(cmdstr string) error {
+	cmd := exec.Command("sh", "-c", cmdstr)
+	log.Printf("Running: %s\n", cmdstr)
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return err
+	}
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		return err
+	}
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+	se := bufio.NewScanner(stderr)
+	so := bufio.NewScanner(stdout)
+	logIO := func(s *bufio.Scanner, prefix string) {
+		for s.Scan() {
+			log.Printf("%s%s\n", prefix, s.Bytes())
+		}
+	}
+	go logIO(se, "! ")
+	go logIO(so, "> ")
+	return cmd.Wait()
 }
 
 func LoadTasksAndEmitConfig() error {
@@ -69,5 +97,11 @@ func LoadTasksAndEmitConfig() error {
 		return fmt.Errorf("Unable to write config to %s: %s", config.TargetFile, err.Error())
 	}
 	log.Printf("Wrote %s\n", config.TargetFile)
+
+	if config.Command != "" {
+		return RunCommand(config.Command)
+	}
+
 	return nil
+
 }
