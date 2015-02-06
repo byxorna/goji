@@ -32,7 +32,7 @@ Generates a config like one-shot mode, but ```goji``` will then listen on ```htt
   ],
   "template": "templates/haproxy.tmpl",
   "target": "/tmp/haproxy.cfg",
-  "check-command": "/usr/bin/check_haproxy_config /tmp/haproxy.cfg && cp /tmp/haproxy.cfg /etc/haproxy/haproxy.cfg && service haproxy reload",
+  "command": "/usr/bin/check_haproxy_config /tmp/haproxy.cfg && cp /tmp/haproxy.cfg /etc/haproxy/haproxy.cfg && service haproxy reload",
   "http-port": 8000,
   "delay": 5
 }
