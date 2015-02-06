@@ -17,6 +17,18 @@ Generates a config like one-shot mode, but ```goji``` will then listen on ```htt
 
 ```./goji -conf myconfig.json -server```
 
+### Docker
+
+An automated build of master is available at [registry.hub.docker.com/u/byxorna/goji](https://registry.hub.docker.com/u/byxorna/goji/). The container is more useful when run in single shot mode, as opposed to ```-server``` mode. You can use dockers ```-v``` argument to mount directories into the container to provide a config or output directory.
+
+```
+# docker run -it byxorna/goji -h
+Usage of ./goji:
+  -conf="": config json file
+  -server=false: start a HTTP server listening for Marathon events
+  -target="": target file to write to
+```
+
 ## Configuration
 
 ```goji``` takes a config file, formatted in json, as the ```-conf``` option. It tells ```goji``` information about your marathon instance, what services (app IDs) to query for tasks, and where and with what template to write configs out.
