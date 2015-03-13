@@ -6,7 +6,7 @@ After=network.target
 [Service]
 Type=simple
 EnvironmentFile=-/etc/sysconfig/goji
-ExecStart=/usr/bin/goji -server -conf $CONFIG $OPTIONS
+ExecStart=/usr/bin/goji -server $OPTIONS
 
 [Install]
 WantedBy=multi-user.target
