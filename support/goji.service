@@ -1,0 +1,12 @@
+[Unit]
+Description=Marathon Task Proxy Config Generator
+Documentation=https://github.com/byxorna/goji
+After=network.target
+
+[Service]
+Type=simple
+EnvironmentFile=-/etc/sysconfig/goji
+ExecStart=/usr/bin/goji -server -conf $CONFIG $OPTIONS
+
+[Install]
+WantedBy=multi-user.target
