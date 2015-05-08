@@ -14,6 +14,7 @@ type Service struct {
 	healthCheckPath string
 	Protocol        ProtocolType
 	Port            int
+	Options         map[string]string
 }
 
 type ProtocolType string
@@ -70,6 +71,7 @@ func NewService(cfg ConfigService) (Service, error) {
 		Protocol:        cfg.Protocol,
 		healthCheckPath: cfg.HealthCheckPath,
 		Port:            cfg.Port,
+		Options:         cfg.Options,
 	}, nil
 }
 

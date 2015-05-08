@@ -40,7 +40,9 @@ Usage of ./goji:
   "services": [
     { "app-id": "/sre/byxorna/site", "vhost": "pipefail.service.iata.tumblr.net" },
     { "app-id": "/sre/byxorna/app1", "vhost": "app1.service.iata.tumblr.net", "protocol":"TCP" },
-    { "app-id": "/sre/byxorna/webapp", "vhost": "web.service.iata.tumblr.net", "protocol":"HTTP", "health-check":"/_health" }
+    { "app-id": "/sre/byxorna/webapp", "vhost": "web.service.iata.tumblr.net", "protocol":"HTTP", "health-check":"/_health" },
+    { "app-id": "/sre/byxorna/appwithopts", "vhost": "myapp", "protocol":"HTTP", "health-check":"/_health",
+      "options": { "acl-match": "-m beg", "healthcheck-rate":"100"}}
   ],
   "template": "templates/haproxy.tmpl",
   "target": "/tmp/haproxy.cfg",
@@ -73,6 +75,9 @@ Usage of ./goji:
   "health-check":"/_health",
   // what service port to use. Defaults to 80, but you can override for TCP services
   "port":80
+  // options is an optional map[string]string of arbitrary options you can switch on in your templates
+  // these are useful to specify behavior logic per service
+  options: { "acl-match": "-m beg", "healthcheck-rate":"100" }
 }
 ```
 
@@ -101,6 +106,9 @@ Sweet!
 ```
 
 A much more useful template is available in ```example/haproxy.tmpl``` and ```example/nginx.tmpl```
+
+You may use arbitrary keys and values in `$service.Options` to do clever things per service. For example, this snippet will allow you to modify how the haproxy acl rule works with options stored per service.
+```acl {{ $service.EscapeAppIdColon }}-aclrule hdr(host) {{with index $service.Options "acl-opts"}}{{index $service.Options "acl-opts"}} {{end}}{{ $service.Vhost }}```
 
 ## Build
 

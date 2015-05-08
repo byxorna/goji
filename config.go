@@ -23,11 +23,12 @@ type Config struct {
 // the user defined representation of a service
 // passed into NewService to create an actual Service struct which does validation
 type ConfigService struct {
-	Vhost           string       `json:"vhost"`
-	AppId           string       `json:"app-id"`
-	HealthCheckPath string       `json:"health-check"`
-	Protocol        ProtocolType `json:"protocol"`
-	Port            int          `json:"port"`
+	Vhost           string            `json:"vhost"`
+	AppId           string            `json:"app-id"`
+	HealthCheckPath string            `json:"health-check"`
+	Protocol        ProtocolType      `json:"protocol"`
+	Port            int               `json:"port"`
+	Options         map[string]string `json:"options"`
 }
 
 func LoadConfig(configPath string) (Config, error) {
