@@ -38,10 +38,10 @@ Usage of ./goji:
   "marathon-host":"marathon1.tumblr.net",
   "marathon-port":8080,
   "services": [
-    { "app-id": "/sre/byxorna/site", "vhost": "pipefail.service.iata.tumblr.net" },
-    { "app-id": "/sre/byxorna/app1", "vhost": "app1.service.iata.tumblr.net", "protocol":"TCP" },
-    { "app-id": "/sre/byxorna/webapp", "vhost": "web.service.iata.tumblr.net", "protocol":"HTTP", "health-check":"/_health" },
-    { "app-id": "/sre/byxorna/appwithopts", "vhost": "myapp", "protocol":"HTTP", "health-check":"/_health",
+    { "app-id": "/sre/byxorna/site", "name": "pipefail.service.iata.tumblr.net" },
+    { "app-id": "/sre/byxorna/app1", "name": "app1.service.iata.tumblr.net", "protocol":"TCP" },
+    { "app-id": "/sre/byxorna/webapp", "name": "web.service.iata.tumblr.net", "protocol":"HTTP", "health-check":"/_health" },
+    { "app-id": "/sre/byxorna/appwithopts", "name": "myapp", "protocol":"HTTP", "health-check":"/_health",
       "options": { "acl-match": "-m beg", "healthcheck-rate":"100"}}
   ],
   "template": "templates/haproxy.tmpl",
@@ -59,7 +59,7 @@ Usage of ./goji:
 * ```http-port```: What port to start an HTTP event listener on to register and receive event messages from marathon (optional, default: 8000)
 * ```delay```: Coalesce events within this window before triggering a task get and config emit (optional, default: 0)
 * ```command```: Run a script after writing out the config (optional, default: empty)
-* ```services```: List of Services. A service is an object with a ```app-id``` key of the marathon app ID you want tasks from, and a ```vhost``` that will be passed into your template for each service. See below.
+* ```services```: List of Services. A service is an object with a ```app-id``` key of the marathon app ID you want tasks from, and a ```name``` that will be passed into your template for each service. See below.
 
 ### Service Configuration
 
@@ -67,8 +67,8 @@ Usage of ./goji:
 {
   // marathon app id for your application
   "app-id": "/sre/byxorna/webapp",
-  // a vhost that is associated with the service. Useful for doing nginx vhosting for http apps
-  "vhost": "web.service.iata.tumblr.net",
+  // a name that is associated with the service. Useful for doing nginx vhosting for http apps, or service name for DNS SRV records. Just a string
+  "name": "web.service.iata.tumblr.net",
   // TCP or HTTP, defaults to HTTP
   "protocol":"HTTP",
   // if the protocol of the service is HTTP, you can specify a health check URI here
@@ -94,21 +94,64 @@ The ```comand``` field in the config json specifies a command to run upon succes
 
 ## Templates
 
-You can use ```goji``` to emit whatever configs you care about. Common usecases would be HAproxy or Nginx configurations. The ```vhost``` attribute could be useful for doing nginx/apache vhosting to identify a request by ```Host:``` header.
+You can use ```goji``` to emit whatever configs you care about. Common usecases would be HAproxy or Nginx configurations. The ```name``` attribute could be useful for doing nginx/apache vhosting to identify a request by ```Host:``` header.
 
 Here is an example:
 
 ```
 This is a test template
-{{ range $index, $service := . }}AppId {{ $service.AppId }} at {{ $service.Vhost }}{{ range $i, $task := $service.Tasks }}
+{{ range $index, $service := . }}AppId {{ $service.AppId }} at {{ $service.Name }}{{ range $i, $task := $service.Tasks }}
 {{ range $j, $port := $task.Ports }}  task: {{ $task.Id }} {{ $task.Host }}:{{ $port }}{{ end }}{{ end }}{{ end }}
 Sweet!
 ```
 
-A much more useful template is available in ```example/haproxy.tmpl``` and ```example/nginx.tmpl```
+A much more useful template is available in `example/haproxy.tmpl`, `example/nginx.tmpl`, and `example/named.tmpl`
 
 You may use arbitrary keys and values in `$service.Options` to do clever things per service. For example, this snippet will allow you to modify how the haproxy acl rule works with options stored per service.
-```acl {{ $service.EscapeAppIdColon }}-aclrule hdr(host) {{with index $service.Options "acl-opts"}}{{index $service.Options "acl-opts"}} {{end}}{{ $service.Vhost }}```
+```acl {{ $service.EscapeAppIdColon }}-aclrule hdr(host) {{with index $service.Options "acl-opts"}}{{index $service.Options "acl-opts"}} {{end}}{{ $service.Name }}```
+
+### DNS SRV Records
+
+You can generate a named zone with SRV records from marathon backends trivially, given the template:
+
+```
+@ IN SOA ns1.example.com. admin.example.com. (
+  12345      ; serial
+  600        ; refresh
+  1800       ; retry
+  604800     ; expire
+  300        ; minimum
+  )
+
+  IN NS ns1.example.com.
+  IN NS ns2.example.com.
+
+$ORIGIN goji.example.com.
+; service.proto.owner-name     ttl   class   rr    pri   weight    port    target
+; _http._tcp.goji.example.com. 60    IN      SRV   0     5         301234  ct-12345.iata.example.com.
+{{ range $index, $service := . }}
+; SRV for {{$service.Name}}
+{{ range $i, $task := $service.Tasks }}{{ range $j, $port := $task.Ports }}_{{$service.Name}}._{{$service.Protocol}}  {{with index $service.Options "ttl"}}{{index $service.Options "ttl"}}{{else}}60{{end}}  IN SRV 0 5 {{$port}} {{$task.Host}}.{{end}}
+{{end}}{{end}}
+```
+
+And config:
+
+```
+{
+  "marathon-host":"marathon.example.com",
+  "services": [
+    { "app-id": "/sre/website", "name": "http", "protocol":"HTTP"},
+    { "app-id": "/sre/tracker", "name": "tracker","protocol":"UDP","options":{"ttl":"120"}},
+    { "app-id": "/sre/tcpservice", "name": "myservice", "protocol":"TCP"}
+  ],
+  "template": "example/named.tmpl",
+  "target": "./named.zone.cfg",
+  "command": "named-checkzone goji.example.com ./named.zone.cfg && cp ./named.zone.cfg /var/named/services.zone && service named reload",
+  "delay": 5
+}
+```
+
 
 ## Build
 

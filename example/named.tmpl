@@ -1,0 +1,18 @@
+@ IN SOA ns1.example.com. admin.example.com. (
+  12345      ; serial
+  600        ; refresh
+  1800       ; retry
+  604800     ; expire
+  300        ; minimum
+  )
+
+  IN NS ns1.example.com.
+  IN NS ns2.example.com.
+
+$ORIGIN goji.example.com.
+; service.proto.owner-name     ttl   class   rr    pri   weight    port    target
+; _http._tcp.goji.example.com. 60    IN      SRV   0     5         301234  ct-12345.iata.example.com.
+{{ range $index, $service := . }}
+; SRV for {{$service.Name}}
+{{ range $i, $task := $service.Tasks }}{{ range $j, $port := $task.Ports }}_{{$service.Name}}._{{$service.Protocol}}  {{with index $service.Options "ttl"}}{{index $service.Options "ttl"}}{{else}}60{{end}}  IN SRV 0 5 {{$port}} {{$task.Host}}.{{end}}
+{{end}}{{end}}

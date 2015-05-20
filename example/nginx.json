@@ -1,8 +1,8 @@
 {
   "marathon-host":"ct-aa8910fa.ewr01.tumblr.net",
   "services": [
-    { "app-id": "/sre/byxorna/site", "vhost": "pipefail.service.iata.tumblr.net" },
-    { "app-id": "/sre/sys/phil", "vhost": "phil.service.iata.tumblr.net", "health-check":"/health" }
+    { "app-id": "/sre/byxorna/site", "name": "pipefail.service.iata.tumblr.net" },
+    { "app-id": "/sre/sys/phil", "name": "phil.service.iata.tumblr.net", "health-check":"/health" }
   ],
   "template": "example/nginx.tmpl",
   "target": "./nginx.cfg",

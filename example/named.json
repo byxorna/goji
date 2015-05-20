@@ -1,0 +1,12 @@
+{
+  "marathon-host":"ct-aa8910fa.ewr01.tumblr.net",
+  "services": [
+    { "app-id": "/sre/byxorna/site", "name": "pipefail", "protocol":"HTTP"},
+    { "app-id": "/sre/prodtrackr", "name": "tracker","protocol":"UDP","options":{"ttl":"120"}},
+    { "app-id": "/sre/sys/phil", "name": "phil", "protocol":"TCP"}
+  ],
+  "template": "example/named.tmpl",
+  "target": "./named.zone.cfg",
+  "command": "echo 'stdout' && echo 'stderr testing' >&2 && test -r ./named.zone.cfg && cat named.zone.cfg",
+  "delay": 5
+}

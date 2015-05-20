@@ -23,7 +23,7 @@ defaults
 frontend http-in
         bind *:80
         {{ range $index, $service := . }}{{if $service.HTTPProtocol }}
-        acl {{ $service.EscapeAppIdColon }}-aclrule hdr(host) {{with index $service.Options "match"}}{{index $service.Options "match"}} {{end}}{{ $service.Vhost }}
+        acl {{ $service.EscapeAppIdColon }}-aclrule hdr(host) {{with index $service.Options "match"}}{{index $service.Options "match"}} {{end}}{{ $service.Name }}
         use_backend {{ $service.EscapeAppIdColon }}-{{$index}}-cluster if {{ $service.EscapeAppIdColon }}-aclrule
         {{ end }}{{ end }}
 

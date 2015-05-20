@@ -1,9 +1,9 @@
 {
   "marathon-host":"ct-aa8910fa.ewr01.tumblr.net",
   "services": [
-    { "app-id": "/sre/byxorna/site", "vhost": "pipefail.service.iata.tumblr.net" },
-    { "app-id": "/sre/byxorna/site", "vhost": "pipefail-hc.service.iata.tumblr.net", "health-check":"/health" },
-    { "app-id": "/sre/sys/phil", "vhost": "pipefail.service.iata.tumblr.net", "port":9000, "protocol":"TCP" }
+    { "app-id": "/sre/byxorna/site", "name": "pipefail.service.iata.tumblr.net" },
+    { "app-id": "/sre/byxorna/site", "name": "pipefail-hc.service.iata.tumblr.net", "health-check":"/health" },
+    { "app-id": "/sre/sys/phil", "name": "pipefail.service.iata.tumblr.net", "port":9000, "protocol":"TCP" }
   ],
   "template": "example/haproxy.tmpl",
   "target": "./haproxy.cfg",

@@ -1,14 +1,13 @@
 package main
 
 import (
-	"fmt"
 	"github.com/byxorna/goji/marathon"
 	"sort"
 	"strings"
 )
 
 type Service struct {
-	Vhost           string
+	Name            string
 	AppId           string
 	tasks           *marathon.TaskList
 	healthCheckPath string
@@ -22,6 +21,7 @@ type ProtocolType string
 const (
 	HTTP ProtocolType = "HTTP"
 	TCP               = "TCP"
+	UDP               = "UDP"
 )
 
 type ServiceList []Service
@@ -58,15 +58,15 @@ func NewService(cfg ConfigService) (Service, error) {
 	//TODO do validation of healthcheck here as well
 	if cfg.Protocol == "" {
 		cfg.Protocol = HTTP
-	} else if cfg.Protocol != HTTP && cfg.Protocol != TCP {
-		return Service{}, fmt.Errorf("Unknown protocol %s", cfg.Protocol)
 	}
+  // just accept the protocol given if we dont recognize it? Could be someone using a strange
+  // proto for SRV records like ldap or so on.
 	if cfg.Port == 0 {
 		// just assume port 80 if not specified
 		cfg.Port = 80
 	}
 	return Service{
-		Vhost:           cfg.Vhost,
+		Name:            cfg.Name,
 		AppId:           cfg.AppId,
 		Protocol:        cfg.Protocol,
 		healthCheckPath: cfg.HealthCheckPath,
@@ -103,12 +103,14 @@ func (s *Service) HealthCheckPath() string {
 	}
 }
 
-// is this service using the HTTP protocol?
 func (s *Service) HTTPProtocol() bool {
 	return s.Protocol == HTTP
 }
 
-// is this service using the TCP protocol?
 func (s *Service) TCPProtocol() bool {
 	return s.Protocol == TCP
+}
+
+func (s *Service) UDPProtocol() bool {
+	return s.Protocol == UDP
 }

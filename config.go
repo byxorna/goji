@@ -23,7 +23,7 @@ type Config struct {
 // the user defined representation of a service
 // passed into NewService to create an actual Service struct which does validation
 type ConfigService struct {
-	Vhost           string            `json:"vhost"`
+	Name            string            `json:"name"`
 	AppId           string            `json:"app-id"`
 	HealthCheckPath string            `json:"health-check"`
 	Protocol        ProtocolType      `json:"protocol"`
@@ -39,6 +39,9 @@ func LoadConfig(configPath string) (Config, error) {
 	}
 	defer f.Close()
 	err = json.NewDecoder(f).Decode(&c)
+  if err != nil {
+		return c, err
+  }
 	if c.MarathonPort == 0 {
 		c.MarathonPort = 8080
 	}

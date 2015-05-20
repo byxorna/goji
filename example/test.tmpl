@@ -1,5 +1,5 @@
 This is a test template
-{{ range $index, $service := . }}AppId {{ $service.AppId }} at {{ $service.Vhost }}{{ range $i, $task := $service.Tasks }}
+{{ range $index, $service := . }}AppId {{ $service.AppId }} at {{ $service.Name }}{{ range $i, $task := $service.Tasks }}
 {{ range $j, $port := $task.Ports }}  task: {{ $task.Id }} {{ $task.Host }}:{{ $port }}{{ end }}{{ end }}
 {{ end }}
 ---End test---

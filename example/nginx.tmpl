@@ -4,9 +4,9 @@ upstream {{$backend}} { {{ range $i, $task := $service.Tasks }}{{ range $j, $por
   server {{ $task.Host }}:{{ $port }};{{end}}{{end}}
 }
 server {
-  # application {{$service.AppId}} at domain {{$service.Vhost}}
+  # application {{$service.AppId}} at domain {{$service.Name}}
   listen 80;
-  server_name {{$service.Vhost}};
+  server_name {{$service.Name}};
   root  /srv/www/default/public;
   location / {
     proxy_pass http://{{$backend}};

@@ -1,8 +1,8 @@
 {
   "marathon-host":"192.168.1.1",
   "services": [
-    { "app-id": "/sre/byxorna/site", "vhost": "pipefail.service.iata.tumblr.net" },
-    { "app-id": "/tumblr/api", "vhost": "service2.tumblr.net" }
+    { "app-id": "/sre/byxorna/site", "name": "pipefail.service.iata.tumblr.net" },
+    { "app-id": "/tumblr/api", "name": "service2.tumblr.net" }
   ],
   "template": "templates/test.tmpl"
 }

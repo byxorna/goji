@@ -1,10 +1,10 @@
 {
   "marathon-host":"ct-aa8910fa.ewr01.tumblr.net",
   "services": [
-    { "app-id": "/sre/byxorna/site", "vhost": "vh1" },
-    { "app-id": "/sre/byxorna/site", "protocol":"HTTP", "vhost": "vh2" },
-    { "app-id": "/sre/byxorna/site", "protocol":"TCP", "vhost": "vh3", "health-check": "/fuck" },
-    { "app-id": "/sre/byxorna/site", "health-check":"/_health","vhost": "vh4" }
+    { "app-id": "/sre/byxorna/site", "name": "vh1" },
+    { "app-id": "/sre/byxorna/site", "protocol":"HTTP", "name": "vh2" },
+    { "app-id": "/sre/byxorna/site", "protocol":"TCP", "name": "vh3", "health-check": "/fuck" },
+    { "app-id": "/sre/byxorna/site", "health-check":"/_health","name": "vh4" }
   ],
   "template": "example/test.tmpl",
   "target": "./output.cfg",
