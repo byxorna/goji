@@ -1,0 +1,11 @@
+{
+  "marathon-host":"mymarathonhost",
+  "services": [
+    { "app-id": "/test/app/1", "name": "test1", "options": {"domain":"a.b.com"}},
+    { "app-id": "/app/2", "name": "test2",
+      "options": { "match": "-m beg" } }
+  ],
+  "template": "example/haproxy.tmpl",
+  "target": "./output.cfg",
+  "delay": 5
+}
