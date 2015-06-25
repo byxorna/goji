@@ -3,6 +3,8 @@ Goji: Marathon Task Proxy Config Generator
 
 ```goji``` is a server that registers with a Marathon instance, consumes events, and emits templated configs containing information about running tasks for a set of apps that you care about.
 
+[![Build Status](https://travis-ci.org/byxorna/goji.svg)](https://travis-ci.org/byxorna/goji)
+
 ## Run
 
 ### One-shot mode
