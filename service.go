@@ -30,7 +30,7 @@ type ServiceList []Service
 // and clobber each service in the ServiceList's Tasks with a new set
 func (services *ServiceList) LoadAllAppTasks(c marathon.Client) error {
 	for i, service := range *services {
-		ts, err := c.GetTasks(service.AppId)
+		ts, err := c.GetTasks(service.AppId, appPresenceRequired)
 		if err != nil {
 			return err
 		}
@@ -59,8 +59,8 @@ func NewService(cfg ConfigService) (Service, error) {
 	if cfg.Protocol == "" {
 		cfg.Protocol = HTTP
 	}
-  // just accept the protocol given if we dont recognize it? Could be someone using a strange
-  // proto for SRV records like ldap or so on.
+	// just accept the protocol given if we dont recognize it? Could be someone using a strange
+	// proto for SRV records like ldap or so on.
 	if cfg.Port == 0 {
 		// just assume port 80 if not specified
 		cfg.Port = 80

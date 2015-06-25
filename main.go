@@ -19,16 +19,18 @@ var (
 	// current state of services we know about
 	services ServiceList
 	// listen to this channel for update triggers
-	eventChan chan string
-	client    marathon.Client
-	sigChan   chan os.Signal
-	server    bool
+	eventChan           chan string
+	client              marathon.Client
+	sigChan             chan os.Signal
+	server              bool
+	appPresenceRequired bool
 )
 
 func init() {
-	flag.StringVar(&configPath, "conf", "", "config json file")
-	flag.BoolVar(&server, "server", false, "start a HTTP server listening for Marathon events")
-	flag.StringVar(&target, "target", "", "target file to write to")
+	flag.StringVar(&configPath, "conf", "", "Config JSON file")
+	flag.BoolVar(&server, "server", false, "Start a HTTP server listening for Marathon events")
+	flag.StringVar(&target, "target", "", "Target file to write to")
+	flag.BoolVar(&appPresenceRequired, "app-required", false, "Require marathon applications to exist (assumes no tasks for missing apps if false)")
 	flag.Parse()
 }
 

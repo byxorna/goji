@@ -53,7 +53,7 @@ func NewClient(host string, port int) Client {
 
 //TODO this may be more efficient to hit /v2/tasks?status=running
 // and filter for the apps we care about
-func (c *Client) GetTasks(appId string) (TaskList, error) {
+func (c *Client) GetTasks(appId string, appMustExist bool) (TaskList, error) {
 	url := fmt.Sprintf("http://%s:%d/v2/apps%s/tasks", c.host, c.port, appId)
 	log.Printf("Getting %s\n", url)
 	req, err := http.NewRequest("GET", url, nil)
@@ -65,8 +65,6 @@ func (c *Client) GetTasks(appId string) (TaskList, error) {
 	req.Header.Add("User-Agent", "byxorna/goji")
 	resp, err := c.client.Do(req)
 
-	//TODO this feels awfully wordy. I miss ruby's brevity....
-
 	if err != nil {
 		return nil, err
 	}
@@ -76,9 +74,11 @@ func (c *Client) GetTasks(appId string) (TaskList, error) {
 	if err != nil {
 		return nil, err
 	}
-	//log.Printf("Got body: %s\n", body)
 
-	if resp.StatusCode != 200 {
+	if !appMustExist && resp.StatusCode == http.StatusNotFound {
+		log.Printf("App %s does not exist in marathon; assuming no tasks\n", appId)
+		return TaskList{}, nil
+	} else if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("Got response %d from %s: %s", resp.StatusCode, url, body)
 	}
 
