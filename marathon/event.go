@@ -5,9 +5,12 @@ import (
 	"time"
 )
 
+//TODO: we should have separate event structs for each message type
 type Event struct {
 	EventType string `json:"eventType"`
 	Timestamp string `json:"timestamp"`
+	AppId     string `json:"appId,omitempty"`
+	TaskId    string `json:"taskId,omitempty"`
 }
 
 /*

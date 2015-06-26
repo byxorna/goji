@@ -66,7 +66,7 @@ func determineEventRelevancy(body []byte) {
 		eventChan <- e.EventType
 	}
 	switch e.EventType {
-	case "status_update_event":
+	case "status_update_event", "health_status_changed_event", "failed_health_check_event":
 		handleEvent()
 	default:
 		log.Printf("Ignoring event type %s\n", e.EventType)
