@@ -69,7 +69,7 @@ func determineEventRelevancy(body []byte) {
 		if err != nil {
 			log.Printf("Unable to decode StatusUpdateEvent: %s\n", err.Error())
 		}
-		log.Printf("Task %s in %s on %s is now %s\n", ev.TaskId, ev.AppId, ev.Host, ev.TaskStatus)
+		log.Printf("Task %s in %s on %s:%v is now %s\n", ev.TaskId, ev.AppId, ev.Host, ev.Ports, ev.TaskStatus)
 	case "health_status_changed_event":
 		ev := marathon.HealthStatusChangedEvent{}
 		err := json.Unmarshal(body, &ev)

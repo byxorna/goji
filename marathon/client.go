@@ -38,11 +38,8 @@ func (c *Client) doGetRequest(route string) (*http.Response, error) {
 	return resp, nil
 }
 
-func (c *Client) GetAllTasks(status TaskStatus) (map[AppId]TaskList, error) {
-	if status != TaskAny && status != TaskRunning && status != TaskStaging {
-		return nil, fmt.Errorf("Only TaskRunning, TaskStaged, or TaskAny are acceptable statuses to query tasks")
-	}
-	resp, err := c.doGetRequest("/v2/tasks")
+func (c *Client) GetAllTasks() (map[AppId]TaskList, error) {
+	resp, err := c.doGetRequest("/v2/tasks?status=running")
 	if err != nil {
 		return nil, err
 	}

@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/byxorna/goji/marathon"
+	"log"
 	"sort"
 	"strings"
 )
@@ -30,7 +31,7 @@ type ServiceList []Service
 // populates the list of tasks in each service
 // and clobber each service in the ServiceList's Tasks with a new set
 func (services *ServiceList) LoadAllAppTasks(c marathon.Client) error {
-	marathonApps, err := c.GetAllTasks(marathon.TaskAny)
+	marathonApps, err := c.GetAllTasks()
 	if err != nil {
 		return err
 	}
@@ -45,11 +46,31 @@ func (services *ServiceList) LoadAllAppTasks(c marathon.Client) error {
 				marathonApps[service.AppId] = marathon.TaskList{}
 			}
 		}
+
+		// filter tasks for those which are actually healthy
+		// if no health checks are present, marathon defers to mesos task status TASK_RUNNING -> healthy
+		// so... if we find any healthcheck responses that are not alive, and dont add them to a new array
+		// (because splicing is hard)
+		healthyTasks := marathon.TaskList{}
+		for _, t := range ts {
+			healthy := true
+			for _, h := range t.HealthCheckResults {
+				if !h.Alive {
+					log.Printf("Task %s is considered unhealthy by marathon, removing\n", t.String(), service.AppId)
+					healthy = false
+				}
+			}
+			if healthy {
+				// build up the list of healthy tasks
+				healthyTasks = append(healthyTasks, t)
+			}
+		}
+
+		// Make sure we sort tasks, so configs have a predictable ordering and dont change every run
+		sort.Sort(healthyTasks)
 		// I still really dont grok how go's pointers work for mutability
 		// but this works...
-		// Make sure we sort tasks, so configs have a predictable ordering and dont change every run
-		sort.Sort(ts)
-		(*services)[i].tasks = &ts
+		(*services)[i].tasks = &healthyTasks
 	}
 	return nil
 }
