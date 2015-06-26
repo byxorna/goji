@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/byxorna/goji/marathon"
 	"sort"
 	"strings"
@@ -8,7 +9,7 @@ import (
 
 type Service struct {
 	Name            string
-	AppId           string
+	AppId           marathon.AppId
 	tasks           *marathon.TaskList
 	healthCheckPath string
 	Protocol        ProtocolType
@@ -29,10 +30,20 @@ type ServiceList []Service
 // populates the list of tasks in each service
 // and clobber each service in the ServiceList's Tasks with a new set
 func (services *ServiceList) LoadAllAppTasks(c marathon.Client) error {
+	marathonApps, err := c.GetAllTasks(marathon.TaskAny)
+	if err != nil {
+		return err
+	}
+
 	for i, service := range *services {
-		ts, err := c.GetTasks(service.AppId, appPresenceRequired)
-		if err != nil {
-			return err
+		ts, ok := marathonApps[service.AppId]
+		if !ok {
+			if appPresenceRequired {
+				return fmt.Errorf("%s does not exist in marathon, -app-required is true", service.AppId)
+			} else {
+				// we should assume an empty task set
+				marathonApps[service.AppId] = marathon.TaskList{}
+			}
 		}
 		// I still really dont grok how go's pointers work for mutability
 		// but this works...
@@ -54,6 +65,7 @@ func NewServiceList(configservices []ConfigService) (ServiceList, error) {
 	}
 	return svcs, nil
 }
+
 func NewService(cfg ConfigService) (Service, error) {
 	//TODO do validation of healthcheck here as well
 	if cfg.Protocol == "" {
@@ -77,12 +89,12 @@ func NewService(cfg ConfigService) (Service, error) {
 
 // replaces / with ::, useful for creating haproxy identifiers
 func (s *Service) EscapeAppIdColon() string {
-	return strings.Replace(s.AppId, "/", "::", -1)
+	return strings.Replace(string(s.AppId), "/", "::", -1)
 }
 
 // replaces / with _, useful for creating nginx identifiers
 func (s *Service) EscapeAppIdUnderscore() string {
-	return strings.Replace(s.AppId, "/", "_", -1)
+	return strings.Replace(string(s.AppId), "/", "_", -1)
 }
 
 // returns a copy of the list of tasks, or [] if tasks is a nil pointer

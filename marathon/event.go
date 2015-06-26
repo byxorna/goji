@@ -9,14 +9,14 @@ import (
 type Event struct {
 	EventType string `json:"eventType"`
 	Timestamp string `json:"timestamp"`
-	AppId     string `json:"appId,omitempty"`
+	AppId     AppId  `json:"appId,omitempty"`
 	TaskId    string `json:"taskId,omitempty"`
 }
 
 type StatusUpdateEvent struct {
 	EventType  string     `json:"eventType"`
 	Timestamp  string     `json:"timestamp"`
-	AppId      string     `json:"appId"`
+	AppId      AppId      `json:"appId"`
 	TaskId     string     `json:"taskId"`
 	SlaveId    string     `json:"slaveId"`
 	TaskStatus TaskStatus `json:"taskStatus"`
@@ -27,23 +27,10 @@ type StatusUpdateEvent struct {
 type HealthStatusChangedEvent struct {
 	EventType string `json:"eventType"`
 	Timestamp string `json:"timestamp"`
-	AppId     string `json:"appId"`
+	AppId     AppId  `json:"appId"`
 	TaskId    string `json:"taskId"`
 	Alive     bool   `json:"alive"`
 }
-
-/*
-API Request: Fired every time marathon receives an API request that modifies an app
-Deployment: Fired whenever a deployment is started or stopped
-
-type DeploymentEvent struct {
-	eventType string `json:"eventType"`
-	timestamp string `json:"timestamp"`
-	groupId   string `json:"timestamp"`
-	version   string `json:"version"`
-}
-
-*/
 
 func (e *Event) Time() time.Time {
 	t, err := time.Parse(time.RFC3339, e.Timestamp)

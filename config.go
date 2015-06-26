@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/byxorna/goji/marathon"
 	"os"
 )
 
@@ -24,7 +25,7 @@ type Config struct {
 // passed into NewService to create an actual Service struct which does validation
 type ConfigService struct {
 	Name            string            `json:"name"`
-	AppId           string            `json:"app-id"`
+	AppId           marathon.AppId    `json:"app-id"`
 	HealthCheckPath string            `json:"health-check"`
 	Protocol        ProtocolType      `json:"protocol"`
 	Port            int               `json:"port"`

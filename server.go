@@ -89,7 +89,7 @@ func determineEventRelevancy(body []byte) {
 	}
 	if processEvent {
 		eventChan <- e.EventType
-  } else {
+	} else {
 		log.Printf("Ignoring event type %s\n", e.EventType)
 	}
 
