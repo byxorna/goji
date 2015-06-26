@@ -1,0 +1,14 @@
+{
+  "marathon-host":"marathon1.fqdn.net",
+  "marathon-port":8080,
+  "services": [
+    { "app-id": "/my/app", "vhost": "app1.service.iata.net" },
+    { "app-id": "/my/tcp/app", "vhost": "tcpapp1.service.iata.net", "protocol":"TCP" },
+    { "app-id": "/my/http/app", "vhost": "webapp1.service.iata.net", "protocol":"HTTP", "health-check":"/_health" }
+  ],
+  "template": "/etc/goji/haproxy.tmpl",
+  "target": "/tmp/haproxy.cfg",
+  "command": "/usr/bin/check_haproxy_config /tmp/haproxy.cfg && cp /tmp/haproxy.cfg /etc/haproxy/haproxy.cfg && service haproxy reload",
+  "http-port": 8000,
+  "delay": 5
+}
