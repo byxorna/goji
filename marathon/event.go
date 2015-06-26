@@ -13,6 +13,25 @@ type Event struct {
 	TaskId    string `json:"taskId,omitempty"`
 }
 
+type StatusUpdateEvent struct {
+	EventType  string     `json:"eventType"`
+	Timestamp  string     `json:"timestamp"`
+	AppId      string     `json:"appId"`
+	TaskId     string     `json:"taskId"`
+	SlaveId    string     `json:"slaveId"`
+	TaskStatus TaskStatus `json:"taskStatus"`
+	Host       string     `json:"host"`
+	Ports      []int      `json:"ports"`
+}
+
+type HealthStatusChangedEvent struct {
+	EventType string `json:"eventType"`
+	Timestamp string `json:"timestamp"`
+	AppId     string `json:"appId"`
+	TaskId    string `json:"taskId"`
+	Alive     bool   `json:"alive"`
+}
+
 /*
 API Request: Fired every time marathon receives an API request that modifies an app
 Deployment: Fired whenever a deployment is started or stopped

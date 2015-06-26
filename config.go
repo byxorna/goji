@@ -39,9 +39,9 @@ func LoadConfig(configPath string) (Config, error) {
 	}
 	defer f.Close()
 	err = json.NewDecoder(f).Decode(&c)
-  if err != nil {
+	if err != nil {
 		return c, err
-  }
+	}
 	if c.MarathonPort == 0 {
 		c.MarathonPort = 8080
 	}

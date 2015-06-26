@@ -61,14 +61,35 @@ func determineEventRelevancy(body []byte) {
 		log.Printf("Unable to decode event body: %s\n", err.Error())
 		return
 	}
-	log.Printf("Received event %s generated at %s\n", e.EventType, e.Time())
-	var handleEvent = func() {
-		eventChan <- e.EventType
-	}
+	var processEvent = true
 	switch e.EventType {
-	case "status_update_event", "health_status_changed_event", "failed_health_check_event":
-		handleEvent()
+	case "status_update_event":
+		ev := marathon.StatusUpdateEvent{}
+		err := json.Unmarshal(body, &ev)
+		if err != nil {
+			log.Printf("Unable to decode StatusUpdateEvent: %s\n", err.Error())
+		}
+		log.Printf("Task %s in %s on %s is now %s\n", ev.TaskId, ev.AppId, ev.Host, ev.TaskStatus)
+	case "health_status_changed_event":
+		ev := marathon.HealthStatusChangedEvent{}
+		err := json.Unmarshal(body, &ev)
+		if err != nil {
+			log.Printf("Unable to decode HealthStatusChangedEvent: %s\n", err.Error())
+			return
+		}
+		status := "dead"
+		if ev.Alive {
+			status = "alive"
+		}
+		log.Printf("Task %s in %s is now %s\n", ev.TaskId, ev.AppId, status)
+	case "failed_health_check_event":
+		log.Printf("Task %s in %s failed its health check\n", e.TaskId, e.AppId)
 	default:
+		processEvent = false
+	}
+	if processEvent {
+		eventChan <- e.EventType
+  } else {
 		log.Printf("Ignoring event type %s\n", e.EventType)
 	}
 
