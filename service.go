@@ -1,14 +1,16 @@
 package main
 
 import (
+	"fmt"
 	"github.com/byxorna/goji/marathon"
+	"log"
 	"sort"
 	"strings"
 )
 
 type Service struct {
 	Name            string
-	AppId           string
+	AppId           marathon.AppId
 	tasks           *marathon.TaskList
 	healthCheckPath string
 	Protocol        ProtocolType
@@ -29,16 +31,46 @@ type ServiceList []Service
 // populates the list of tasks in each service
 // and clobber each service in the ServiceList's Tasks with a new set
 func (services *ServiceList) LoadAllAppTasks(c marathon.Client) error {
+	marathonApps, err := c.GetAllTasks()
+	if err != nil {
+		return err
+	}
+
 	for i, service := range *services {
-		ts, err := c.GetTasks(service.AppId, appPresenceRequired)
-		if err != nil {
-			return err
+		ts, ok := marathonApps[service.AppId]
+		if !ok {
+			if appPresenceRequired {
+				return fmt.Errorf("%s does not exist in marathon, -app-required is true", service.AppId)
+			} else {
+				// we should assume an empty task set
+				marathonApps[service.AppId] = marathon.TaskList{}
+			}
 		}
+
+		// filter tasks for those which are actually healthy
+		// if no health checks are present, marathon defers to mesos task status TASK_RUNNING -> healthy
+		// so... if we find any healthcheck responses that are not alive, and dont add them to a new array
+		// (because splicing is hard)
+		healthyTasks := marathon.TaskList{}
+		for _, t := range ts {
+			healthy := true
+			for _, h := range t.HealthCheckResults {
+				if !h.Alive {
+					log.Printf("Task %s is considered unhealthy by marathon, removing\n", t.String(), service.AppId)
+					healthy = false
+				}
+			}
+			if healthy {
+				// build up the list of healthy tasks
+				healthyTasks = append(healthyTasks, t)
+			}
+		}
+
+		// Make sure we sort tasks, so configs have a predictable ordering and dont change every run
+		sort.Sort(healthyTasks)
 		// I still really dont grok how go's pointers work for mutability
 		// but this works...
-		// Make sure we sort tasks, so configs have a predictable ordering and dont change every run
-		sort.Sort(ts)
-		(*services)[i].tasks = &ts
+		(*services)[i].tasks = &healthyTasks
 	}
 	return nil
 }
@@ -54,6 +86,7 @@ func NewServiceList(configservices []ConfigService) (ServiceList, error) {
 	}
 	return svcs, nil
 }
+
 func NewService(cfg ConfigService) (Service, error) {
 	//TODO do validation of healthcheck here as well
 	if cfg.Protocol == "" {
@@ -77,12 +110,12 @@ func NewService(cfg ConfigService) (Service, error) {
 
 // replaces / with ::, useful for creating haproxy identifiers
 func (s *Service) EscapeAppIdColon() string {
-	return strings.Replace(s.AppId, "/", "::", -1)
+	return strings.Replace(string(s.AppId), "/", "::", -1)
 }
 
 // replaces / with _, useful for creating nginx identifiers
 func (s *Service) EscapeAppIdUnderscore() string {
-	return strings.Replace(s.AppId, "/", "_", -1)
+	return strings.Replace(string(s.AppId), "/", "_", -1)
 }
 
 // returns a copy of the list of tasks, or [] if tasks is a nil pointer

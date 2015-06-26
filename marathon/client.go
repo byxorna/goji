@@ -8,35 +8,6 @@ import (
 	"net/http"
 )
 
-/*
-  {
-      "tasks": [
-          {
-              "host": "agouti.local",
-              "id": "my-app_1-1396592790353",
-              "ports": [
-                  31336,
-                  31337
-              ],
-              "stagedAt": "2014-04-04T06:26:30.355Z",
-              "startedAt": "2014-04-04T06:26:30.860Z",
-              "version": "2014-04-04T06:26:23.051Z"
-          },
-          {
-              "host": "agouti.local",
-              "id": "my-app_0-1396592784349",
-              "ports": [
-                  31382,
-                  31383
-              ],
-              "stagedAt": "2014-04-04T06:26:24.351Z",
-              "startedAt": "2014-04-04T06:26:24.919Z",
-              "version": "2014-04-04T06:26:23.051Z"
-          }
-      ]
-  }
-*/
-
 type Client struct {
 	host   string
 	port   int
@@ -51,20 +22,57 @@ func NewClient(host string, port int) Client {
 	}
 }
 
-//TODO this may be more efficient to hit /v2/tasks?status=running
-// and filter for the apps we care about
-func (c *Client) GetTasks(appId string, appMustExist bool) (TaskList, error) {
-	url := fmt.Sprintf("http://%s:%d/v2/apps%s/tasks", c.host, c.port, appId)
+func (c *Client) doGetRequest(route string) (*http.Response, error) {
+	url := fmt.Sprintf("http://%s:%d%s", c.host, c.port, route)
 	log.Printf("Getting %s\n", url)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
-
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("User-Agent", "byxorna/goji")
 	resp, err := c.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
 
+func (c *Client) GetAllTasks() (map[AppId]TaskList, error) {
+	resp, err := c.doGetRequest("/v2/tasks?status=running")
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("Got response %d from %s: %s", resp.StatusCode, resp.Request.URL, body)
+	}
+
+	var js map[string]TaskList
+	err = json.Unmarshal(body, &js)
+	if err != nil {
+		return nil, err
+	}
+
+	//structure map from appid to tasks
+	m := make(map[AppId]TaskList)
+	for _, v := range js["tasks"] {
+		if _, ok := m[v.AppId]; !ok {
+			m[v.AppId] = TaskList{v}
+		} else {
+			m[v.AppId] = append(m[v.AppId], v)
+		}
+	}
+
+	return m, nil
+}
+
+func (c *Client) GetTasks(appId string, appMustExist bool) (TaskList, error) {
+	resp, err := c.doGetRequest(fmt.Sprintf("/v2/apps%s/tasks", appId))
 	if err != nil {
 		return nil, err
 	}
@@ -79,10 +87,10 @@ func (c *Client) GetTasks(appId string, appMustExist bool) (TaskList, error) {
 		log.Printf("App %s does not exist in marathon; assuming no tasks\n", appId)
 		return TaskList{}, nil
 	} else if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("Got response %d from %s: %s", resp.StatusCode, url, body)
+		return nil, fmt.Errorf("Got response %d from %s: %s", resp.StatusCode, resp.Request.URL, body)
 	}
 
-	var js map[string][]Task
+	var js map[string]TaskList
 	err = json.Unmarshal(body, &js)
 	if err != nil {
 		return nil, err
