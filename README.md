@@ -27,9 +27,10 @@ An automated build of master is available at [registry.hub.docker.com/u/byxorna/
 ```
 # docker run -it byxorna/goji -h
 Usage of ./goji:
-  -conf="": config json file
-  -server=false: start a HTTP server listening for Marathon events
-  -target="": target file to write to
+  -app-required=false: Require marathon applications to exist (assumes no tasks for missing apps if false)
+  -conf="": Config JSON file
+  -server=false: Start a HTTP server listening for Marathon events
+  -target="": Target file to write to
 ```
 
 ## Configuration
@@ -162,9 +163,10 @@ And config:
 $ go build
 $ ./goji -help
 Usage of ./goji:
-  -conf="": config json file
-  -server=false: start a HTTP server listening for Marathon events
-  -target="": target file to write to
+  -app-required=false: Require marathon applications to exist (assumes no tasks for missing apps if false)
+  -conf="": Config JSON file
+  -server=false: Start a HTTP server listening for Marathon events
+  -target="": Target file to write to
 ```
 
 ## More information
