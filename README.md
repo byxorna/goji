@@ -52,6 +52,7 @@ Usage of ./goji:
   "target": "/tmp/haproxy.cfg",
   "command": "/usr/bin/check_haproxy_config /tmp/haproxy.cfg && cp /tmp/haproxy.cfg /etc/haproxy/haproxy.cfg && service haproxy reload",
   "http-port": 8000,
+  "callback-hostname": "goji.marathon.mesos.tumblr.net",
   "delay": 5
 }
 ```
@@ -61,6 +62,7 @@ Usage of ./goji:
 * ```template```: Template config file to feed services and tasks into, ```text/template``` format (required)
 * ```target```: Write templated configuration to this location (required)
 * ```http-port```: What port to start an HTTP event listener on to register and receive event messages from marathon (optional, default: 8000)
+* ```callback-hostname```: Hostname to tell Marathon to hit with the HTTP callback when events are triggered. (optional, default: `os.Hostname()`)
 * ```delay```: Coalesce events within this window before triggering a task get and config emit (optional, default: 0)
 * ```command```: Run a script after writing out the config (optional, default: empty)
 * ```services```: List of Services. A service is an object with a ```app-id``` key of the marathon app ID you want tasks from, and a ```name``` that will be passed into your template for each service. See below.

@@ -16,9 +16,11 @@ type Config struct {
 	TemplateFile string          `json:"template,omitempty"`
 	TargetFile   string          `json:"target,omitempty"`
 	// port upon which to listen for events from marathon
-	HttpPort      int    `json:"http-port"`
-	TemplateDelay int    `json:"delay"`
-	Command       string `json:"command"`
+	HttpPort int `json:"http-port"`
+	// hostname to request marathon hit with webhook. defaults to os.Hostname()
+	CallbackHostname string `json:"callback-hostname"`
+	TemplateDelay    int    `json:"delay"`
+	Command          string `json:"command"`
 }
 
 // the user defined representation of a service
@@ -42,6 +44,13 @@ func LoadConfig(configPath string) (Config, error) {
 	err = json.NewDecoder(f).Decode(&c)
 	if err != nil {
 		return c, err
+	}
+	if c.CallbackHostname == "" {
+		hostname, err := os.Hostname()
+		if err != nil {
+			return c, err
+		}
+		c.CallbackHostname = hostname
 	}
 	if c.MarathonPort == 0 {
 		c.MarathonPort = 8080

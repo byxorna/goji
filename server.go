@@ -11,11 +11,7 @@ import (
 )
 
 func ListenForEvents(listenAddr string) error {
-	hostname, err := os.Hostname()
-	if err != nil {
-		return err
-	}
-	cb := fmt.Sprintf("http://%s:%d/event", hostname, config.HttpPort)
+	cb := fmt.Sprintf("http://%s:%d/event", config.CallbackHostname, config.HttpPort)
 	cbRegistered, err := client.HasCallback(cb)
 	if err != nil {
 		return err
