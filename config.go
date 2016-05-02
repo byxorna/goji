@@ -3,18 +3,20 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/byxorna/goji/marathon"
 	"os"
+	"strconv"
+
+	"github.com/byxorna/goji/marathon"
 )
 
 type Config struct {
 	// localhost
 	MarathonHost string `json:"marathon-host,omitempty"`
 	// 8080
-	MarathonPort int             `json:"marathon-port"`
-	Services     []ConfigService `json:"services,omitempty"`
-	TemplateFile string          `json:"template,omitempty"`
-	TargetFile   string          `json:"target,omitempty"`
+	MarathonPort int `json:"marathon-port"`
+	//	Services     []ConfigService `json:"services,omitempty"`
+	TemplateFile string `json:"template,omitempty"`
+	TargetFile   string `json:"target,omitempty"`
 	// port upon which to listen for events from marathon
 	HttpPort int `json:"http-port"`
 	// hostname to request marathon hit with webhook. defaults to os.Hostname()
@@ -34,7 +36,48 @@ type ConfigService struct {
 	Options         map[string]string `json:"options"`
 }
 
-func LoadConfig(configPath string) (Config, error) {
+func MergeConfigWithEnv(some Config) (Config, error) {
+	if some.MarathonHost == "" {
+		some.MarathonHost = os.Getenv("MARATHON_HOST")
+	}
+	if some.MarathonPort == 0 {
+		v, err := strconv.Atoi(os.Getenv("MARATHON_PORT"))
+		if err != nil {
+			return some, err
+		}
+		some.MarathonPort = v
+	}
+	if some.TemplateFile == "" {
+		some.TemplateFile = os.Getenv("TEMPLATE_FILE")
+	}
+	if some.TargetFile == "" {
+		some.TargetFile = os.Getenv("TARGET_FILE")
+	}
+	if some.HttpPort == 0 {
+		v, err := strconv.Atoi(os.Getenv("HTTP_PORT"))
+		if err != nil {
+			return some, err
+		}
+		some.HttpPort = v
+	}
+	if some.CallbackHostname == "" {
+		some.CallbackHostname = os.Getenv("CALLBACK_HOSTNAME")
+	}
+	if some.TemplateDelay == 0 {
+		v, err := strconv.Atoi(os.Getenv("TEMPLATE_DELAY"))
+		if err != nil {
+			return some, err
+		}
+		some.TemplateDelay = v
+	}
+	if some.Command == "" {
+		some.Command = os.Getenv("COMMAND")
+	}
+
+	return some, nil
+}
+
+func LoadConfigFromFile(configPath string) (Config, error) {
 	c := Config{}
 	f, err := os.Open(configPath)
 	if err != nil {
@@ -42,13 +85,14 @@ func LoadConfig(configPath string) (Config, error) {
 	}
 	defer f.Close()
 	err = json.NewDecoder(f).Decode(&c)
-	if err != nil {
-		return c, err
-	}
+	return c, err
+}
+
+func (c *Config) ValidateAndSetDefaults() error {
 	if c.CallbackHostname == "" {
 		hostname, err := os.Hostname()
 		if err != nil {
-			return c, err
+			return err
 		}
 		c.CallbackHostname = hostname
 	}
@@ -59,17 +103,17 @@ func LoadConfig(configPath string) (Config, error) {
 		c.HttpPort = 8000
 	}
 	if c.TemplateFile == "" {
-		return c, fmt.Errorf("template is required")
+		return fmt.Errorf("TemplateFile is required")
 	}
 	if c.TargetFile == "" {
-		return c, fmt.Errorf("target is required")
+		return fmt.Errorf("TargetFile is required")
 	}
 	if c.MarathonHost == "" {
-		return c, fmt.Errorf("marathon-host is required")
+		return fmt.Errorf("MarathonHost is required")
 	}
-	if len(c.Services) == 0 {
-		return c, fmt.Errorf("At least one service is required in `services`")
-	}
+	//if len(c.Services) == 0 {
+	//	return fmt.Errorf("At least one service is required in `services`")
+	//}
 
-	return c, nil
+	return nil
 }

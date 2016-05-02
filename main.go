@@ -39,14 +39,32 @@ func main() {
 		log.Fatal("You need to pass a -conf")
 	}
 	var err error
-	config, err = LoadConfig(configPath)
+
+	// first, load any provided config file
+	file_config, err := LoadConfigFromFile(configPath)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// next, merge it with the available environment
+	merged_config, err := MergeConfigWithEnv(file_config)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// override any config attrs with command line flags
 	// allow -target to override the target specified in config for CLI testing
 	if target != "" {
-		config.TargetFile = target
+		merged_config.TargetFile = target
 	}
+
+	// finally, validate the config and take default values
+	err = merged_config.ValidateAndSetDefaults()
+	if err != nil {
+		log.Fatal(err)
+	}
+	config = merged_config
+
 	log.Printf("Loaded config: %s\n", config)
 	client = marathon.NewClient(config.MarathonHost, config.MarathonPort)
 	services, err = NewServiceList(config.Services)
