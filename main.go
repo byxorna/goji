@@ -17,7 +17,7 @@ var (
 	target string
 	config Config
 	// current state of services we know about
-	services ServiceList
+	//services ServiceList
 	// listen to this channel for update triggers
 	eventChan           chan string
 	client              marathon.Client

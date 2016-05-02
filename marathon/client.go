@@ -38,8 +38,31 @@ func (c *Client) doGetRequest(route string) (*http.Response, error) {
 	return resp, nil
 }
 
-func (c *Client) GetAllTasks() (map[AppId]TaskList, error) {
-	resp, err := c.doGetRequest("/v2/tasks?status=running")
+func (c *Client) GetAllAppsLabeled(label_selector string) ([]AppList, error) {
+	resp, err := c.doGetRequest("/v2/apps?label=" + label_selector)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("Got response %d from %s: %s", resp.StatusCode, resp.Request.URL, body)
+	}
+
+	var js []AppList
+	err = json.Unmarshal(body, &js)
+	if err != nil {
+		return nil, err
+	}
+
+	return js, nil
+}
+
+func (c *Client) GetAllTasksStatus(status string) (map[AppId]TaskList, error) {
+	resp, err := c.doGetRequest("/v2/tasks?status=" + status)
 	if err != nil {
 		return nil, err
 	}

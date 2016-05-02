@@ -28,15 +28,65 @@ const (
 
 type ServiceList []Service
 
+func NewServiceFromMarathonApp(app marathon.App) (Service, error) {
+	// check that the app has all the requisite labels and env vars
+
+	// if the app doesnt have the label "goji", we ignore the app
+	label := "goji"
+	if val, ok := app.Labels[label]; !ok {
+		return Service{}, fmt.Errorf("%s is not labeled with %s, ignoring", app.String(), label)
+	}
+
+	//TODO TODO TODO vvvvvvvvvvvv
+
+	if cfg.Protocol == "" {
+		cfg.Protocol = HTTP
+	}
+	// just accept the protocol given if we dont recognize it? Could be someone using a strange
+	// proto for SRV records like ldap or so on.
+	if cfg.Port == 0 {
+		// just assume port 80 if not specified
+		cfg.Port = 80
+	}
+	return Service{
+		Name:            cfg.Name,
+		AppId:           cfg.AppId,
+		Protocol:        cfg.Protocol,
+		healthCheckPath: cfg.HealthCheckPath,
+		Port:            cfg.Port,
+		Options:         cfg.Options,
+	}, nil
+	//TODO TODO TODO ^^^^^^^^^^^^^^
+}
+
 // populates the list of tasks in each service
 // and clobber each service in the ServiceList's Tasks with a new set
-func (services *ServiceList) LoadAllAppTasks(c marathon.Client) error {
-	marathonApps, err := c.GetAllTasks()
+func LoadAllAppTasks(c marathon.Client) error {
+	// find all apps in marathon that are labeled with goji, and thus eligible for
+	// discovery by us
+	gojiApps, err := c.GetAllAppsLabeled("goji")
 	if err != nil {
 		return err
 	}
 
-	for i, service := range *services {
+	// create a list of Services we care about
+	var services ServiceList
+	for i, app := range gojiApps {
+		//TODO: convert App to a Service
+		s, err := NewServiceFromMarathonApp(app)
+		if err != nil {
+			log.Printf("Unable to load app %s: %s\n", app.Id, err)
+		} else {
+			services = append(services, s)
+		}
+	}
+
+	marathonApps, err := c.GetAllTasksStatus("running")
+	if err != nil {
+		return err
+	}
+
+	for i, service := range services {
 		ts, ok := marathonApps[service.AppId]
 		if !ok {
 			if appPresenceRequired {
